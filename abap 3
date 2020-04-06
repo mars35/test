@@ -1,0 +1,2946 @@
+
+REPORT  /eczb/ufrs16_003.
+TYPE-POOLS: icon,slis.
+TABLES:/eczb/ufrs_t_003,sscrfields.
+CLASS lcl_event_receiver DEFINITION DEFERRED.
+DATA: gt_fieldcat TYPE slis_t_fieldcat_alv.
+DATA: event_receiver TYPE REF TO lcl_event_receiver.
+DATA: gt_fc TYPE lvc_t_fcat,
+      wa_fc TYPE lvc_s_fcat,
+      gt_container  TYPE REF TO cl_gui_custom_container,
+      gt_container1  TYPE REF TO cl_gui_custom_container,
+      mycontainer    TYPE scrfname VALUE 'CONTAINER',
+      grid1          TYPE REF TO cl_gui_alv_grid,
+      gs_print      TYPE lvc_s_prnt,
+      gs_layout     TYPE lvc_s_layo,
+      wa_color      TYPE lvc_s_scol,
+      it_color      TYPE TABLE OF lvc_s_scol WITH HEADER LINE,
+      ok_code       LIKE sy-ucomm,
+      gt_exclude    TYPE ui_functions,
+      is_variant TYPE disvariant,
+      gv_baslangic_kont,
+      gv_xstr_content TYPE xstring.
+
+DATA: BEGIN OF gt_kira_tutari OCCURS 0,
+      sozlesme_id TYPE /eczb/ufrs_t_003-sozlesme_id,
+      monat       TYPE /eczb/ufrs_t_003-monat,
+      dmbtr       TYPE bseg-dmbtr,
+      wrbtr       TYPE bseg-wrbtr,
+      waers       TYPE /eczb/ufrs_t_002-waers,
+      END OF gt_kira_tutari.
+
+DATA : ct_fieldcat TYPE slis_t_fieldcat_alv,
+       gt_top    TYPE slis_t_listheader WITH HEADER LINE,
+       gs_layo   TYPE slis_layout_alv     ,
+       gt_sort   TYPE slis_t_sortinfo_alv  WITH HEADER LINE,
+       gs_glay   TYPE lvc_s_glay.
+
+DATA:gt_kalem       TYPE TABLE OF /eczb/ufrs_t_003 WITH HEADER LINE,
+     gt_kalem_main  TYPE TABLE OF /eczb/ufrs_t_003 WITH HEADER LINE,
+     gt_baslik      TYPE TABLE OF /eczb/ufrs_t_002 WITH HEADER LINE,
+     gt_baslik_1a   TYPE TABLE OF /eczb/ufrs_t_002 WITH HEADER LINE,
+     gt_kalem_n     TYPE TABLE OF /eczb/ufrs_t_011 WITH HEADER LINE.
+DATA:BEGIN OF gt_a OCCURS 0,
+    sozlesme_id     LIKE /eczb/ufrs_t_002-sozlesme_id,
+    sozlesme_ver    LIKE /eczb/ufrs_t_002-sozlesme_ver,
+    soz_durumu      LIKE /eczb/ufrs_t_002-soz_durumu ,
+    bukrs           LIKE /eczb/ufrs_t_002-bukrs,
+    gjahr           LIKE /eczb/ufrs_t_003-gjahr,
+    monat_ger       LIKE /eczb/ufrs_t_003-monat_ger,
+    monat           LIKE /eczb/ufrs_t_002-monat,
+    kiralama_turu   LIKE /eczb/ufrs_t_002-kiralama_turu,
+    sozlesme_no     LIKE /eczb/ufrs_t_002-sozlesme_no,
+    gec_bas         LIKE /eczb/ufrs_t_002-gec_bas,
+    gec_bit         LIKE /eczb/ufrs_t_002-gec_bit,
+    lifnr           LIKE /eczb/ufrs_t_002-lifnr,
+    waers           LIKE /eczb/ufrs_t_002-waers,
+    gsber           LIKE /eczb/ufrs_t_002-gsber,
+    kostl           LIKE /eczb/ufrs_t_002-kostl,
+    aufnr           LIKE /eczb/ufrs_t_002-aufnr,
+    kul_hak         LIKE /eczb/ufrs_t_003-kul_hak_bpb,
+    yukumluluk      LIKE /eczb/ufrs_t_003-yukumluluk_bpb,
+    aylik_kira      LIKE /eczb/ufrs_t_003-yukumluluk_bpb,
+    amort           LIKE /eczb/ufrs_t_003-amort_bpb,
+    faiz            LIKE /eczb/ufrs_t_003-faiz_bpb,
+    soz_durumu_t    LIKE /eczb/ufrs_t_001-text50,
+    kiraturu_t      LIKE /eczb/ufrs_t_001-text50,
+    lifnr_t         TYPE c LENGTH 70,
+  END OF gt_a.
+
+DATA:BEGIN OF gt_a_bp OCCURS 0,
+    sozlesme_id     LIKE /eczb/ufrs_t_002-sozlesme_id,
+    sozlesme_ver    LIKE /eczb/ufrs_t_002-sozlesme_ver,
+    soz_durumu      LIKE /eczb/ufrs_t_002-soz_durumu ,
+    bukrs           LIKE /eczb/ufrs_t_002-bukrs,
+    gjahr           LIKE /eczb/ufrs_t_003-gjahr,
+    monat_ger       LIKE /eczb/ufrs_t_003-monat_ger,
+    monat           LIKE /eczb/ufrs_t_002-monat,
+    kiralama_turu   LIKE /eczb/ufrs_t_002-kiralama_turu,
+    sozlesme_no     LIKE /eczb/ufrs_t_002-sozlesme_no,
+    gec_bas         LIKE /eczb/ufrs_t_002-gec_bas,
+    gec_bit         LIKE /eczb/ufrs_t_002-gec_bit,
+    lifnr           LIKE /eczb/ufrs_t_002-lifnr,
+    waers           LIKE /eczb/ufrs_t_002-waers,
+    gsber           LIKE /eczb/ufrs_t_002-gsber,
+    kostl           LIKE /eczb/ufrs_t_002-kostl,
+    aufnr           LIKE /eczb/ufrs_t_002-aufnr,
+    kul_hak_bpb     LIKE /eczb/ufrs_t_003-kul_hak_bpb,
+    yukumluluk_bpb  LIKE /eczb/ufrs_t_003-yukumluluk_bpb,
+    wrbtr           LIKE /eczb/ufrs_t_003-yukumluluk_bpb,
+    amort_bpb       LIKE /eczb/ufrs_t_003-amort_bpb,
+    faiz_bpb        LIKE /eczb/ufrs_t_003-faiz_bpb,
+
+    kul_hak_upb     LIKE /eczb/ufrs_t_003-kul_hak_bpb,
+    yukumluluk_upb  LIKE /eczb/ufrs_t_003-yukumluluk_bpb,
+    dmbtr           LIKE /eczb/ufrs_t_003-yukumluluk_bpb,
+    amort_upb       LIKE /eczb/ufrs_t_003-amort_bpb,
+    faiz_upb        LIKE /eczb/ufrs_t_003-faiz_bpb,
+    waers_t         LIKE /eczb/ufrs_t_002-waers,
+    soz_durumu_t    LIKE /eczb/ufrs_t_001-text50,
+    kiraturu_t      LIKE /eczb/ufrs_t_001-text50,
+    lifnr_t         TYPE c LENGTH 70,
+  END OF gt_a_bp.
+
+DATA:gt_a_main LIKE TABLE OF gt_a WITH HEADER LINE.
+DATA:BEGIN OF gt_upload OCCURS 0,
+    sozlesme_id       LIKE /eczb/ufrs_t_002-sozlesme_id,
+    sozlesme_ver      LIKE /eczb/ufrs_t_002-sozlesme_ver,
+    bukrs             LIKE /eczb/ufrs_t_002-bukrs,
+    sozlesme_no       LIKE /eczb/ufrs_t_002-sozlesme_no,
+    gec_bas           LIKE /eczb/ufrs_t_002-gec_bas,
+    gec_bit           LIKE /eczb/ufrs_t_002-gec_bit,
+    kiralama_turu     LIKE /eczb/ufrs_t_002-kiralama_turu,
+    soz_durumu        LIKE /eczb/ufrs_t_002-soz_durumu ,
+    lifnr             LIKE /eczb/ufrs_t_002-lifnr,
+    waers             LIKE /eczb/ufrs_t_002-waers,
+    tutar_upb         LIKE /eczb/ufrs_t_002-dmbtr,
+    tutar_bpb         LIKE /eczb/ufrs_t_002-wrbtr,
+    kursf             LIKE /eczb/ufrs_t_002-kursf,
+    gsber             LIKE /eczb/ufrs_t_002-gsber,
+    kostl             LIKE /eczb/ufrs_t_002-kostl,
+    aufnr             LIKE /eczb/ufrs_t_002-aufnr,
+    faiz_orani        LIKE /eczb/ufrs_t_002-faiz_orani,
+    veri_kul          LIKE bseg-hkont,
+    kira_yuk_k        LIKE bseg-hkont,
+    kira_yuk_u        LIKE bseg-hkont,
+    amort_hes         LIKE bseg-hkont,
+    faiz_hes          LIKE bseg-hkont,
+    amort_gid         LIKE bseg-hkont,
+    faiz_gid          LIKE bseg-hkont,
+    txt50             LIKE /eczb/ufrs_t_002-txt50,
+    fat_gunu          LIKE /eczb/ufrs_t_002-fat_gunu,
+    odeme_kos         LIKE /eczb/ufrs_t_002-odeme_kos,
+    odeme_gunu        LIKE /eczb/ufrs_t_002-odeme_gunu,
+    odeme_turu        LIKE /eczb/ufrs_t_002-odeme_turu,
+    artis_or          LIKE /eczb/ufrs_t_002-artis_or,
+    plaka             LIKE /eczb/ufrs_t_002-plaka,
+    pfkber            LIKE /eczb/ufrs_t_002-pfkber,
+    matbu_no          LIKE /eczb/ufrs_t_002-matbu_no,
+    odeme_period      LIKE /eczb/ufrs_t_002-odeme_period,
+    odeme_zamani      LIKE /eczb/ufrs_t_002-odeme_zamani,
+    satin_alma_op     LIKE /eczb/ufrs_t_002-satin_alma_op,
+    yenileme_op       LIKE /eczb/ufrs_t_002-yenileme_op,
+    fesih_op          LIKE /eczb/ufrs_t_002-fesih_op,
+    satin_alma_op_txt LIKE /eczb/ufrs_t_002-satin_alma_op_txt,
+    yenileme_op_txt   LIKE /eczb/ufrs_t_002-yenileme_op_txt,
+    fesih_op_txt      LIKE /eczb/ufrs_t_002-fesih_op_txt,
+    vbund             LIKE /eczb/ufrs_t_002-vbund,
+    soz_bas_tar       LIKE /eczb/ufrs_t_002-soz_bas_tar,
+    faiz_hes_uz       LIKE bseg-hkont,
+    faiz_gid_uz       LIKE bseg-hkont,
+    ilk_odm_tar       LIKE /eczb/ufrs_t_002-ilk_odm_tar,
+    prctr             LIKE /eczb/ufrs_t_002-prctr,
+    sabit_faiz        LIKE /eczb/ufrs_t_002-sabit_faiz,
+    kira_gider        LIKE /eczb/ufrs_t_006-kira_gider    ,
+    geri_cekme        LIKE /eczb/ufrs_t_006-geri_cekme    ,
+    kira_gider_uv     LIKE /eczb/ufrs_t_006-kira_gider_uv ,
+    gaag              LIKE /eczb/ufrs_t_002-gaag ,
+  END OF gt_upload.
+
+DATA: BEGIN OF gt_kayit_gos OCCURS 0,
+      mark,
+      sozlesme_id LIKE /eczb/ufrs_t_002-sozlesme_id,
+      hkont LIKE bseg-hkont,
+      txt50 LIKE skat-txt50,
+      shkzg LIKE bseg-shkzg,
+      kostl LIKE bseg-kostl,
+      aufnr LIKE bseg-aufnr,
+      tutar LIKE bseg-dmbtr,
+      waers LIKE bkpf-waers,
+  END OF gt_kayit_gos.
+
+DATA: BEGIN OF gt_kayit_gos_bp OCCURS 0,
+      mark,
+      sozlesme_id LIKE /eczb/ufrs_t_002-sozlesme_id,
+      hkont       LIKE bseg-hkont,
+      txt50       LIKE skat-txt50,
+      shkzg       LIKE bseg-shkzg,
+      kostl       LIKE bseg-kostl,
+      aufnr       LIKE bseg-aufnr,
+      tutar       LIKE bseg-dmbtr,
+      waers       LIKE bkpf-waers,
+      tutar_up    LIKE bseg-dmbtr,
+      waers_t     LIKE bkpf-waers,
+  END OF gt_kayit_gos_bp.
+
+*** Variable Declarations
+* Declare cells
+DATA: w_cell1 TYPE ole2_object,
+      w_cell2 TYPE ole2_object.
+
+* Ole data Declarations
+DATA: h_excel     TYPE ole2_object, " Excel object
+      h_mapl      TYPE ole2_object, " list of workbooks
+      h_map       TYPE ole2_object, " workbook
+      h_zl        TYPE ole2_object, " cell
+      h_f         TYPE ole2_object, " font
+      gs_interior TYPE ole2_object, " Pattern
+      worksheet   TYPE ole2_object,
+      h_cell      TYPE ole2_object,
+      h_cell1     TYPE ole2_object,
+      range       TYPE ole2_object,
+      h_sheet2    TYPE ole2_object,
+      h_sheet3    TYPE ole2_object,
+      h_sheet4    TYPE ole2_object,
+      gs_font     TYPE ole2_object,
+      flg_stop(1) TYPE c.
+
+
+TYPES: data1(1500) TYPE c,
+       ty_data     TYPE TABLE OF data1.
+*** Variables
+DATA:
+      rec TYPE sy-tfill,
+      deli(1) TYPE c,
+      l_amt(18) TYPE c,
+      gv_sheet_name(20) TYPE c.
+
+DATA: BEGIN OF hex,
+        tab TYPE x,
+      END OF hex.
+
+DATA: gt_upload_hkont TYPE TABLE OF /eczb/ufrs_t_006 WITH HEADER LINE,
+      gt_001 TYPE TABLE OF /eczb/ufrs_t_001 WITH HEADER LINE.
+SELECTION-SCREEN BEGIN OF BLOCK b0 WITH FRAME TITLE text-000.
+PARAMETERS: p_file       LIKE rlgrap-filename.
+*selection-screen uline.
+*parameters:     p_bukrs like /ECZB/UFRS_T_002-bukrs obligatory.
+*select-options: s_gjahr for /ECZB/UFRS_T_003-gjahr  obligatory,
+*                s_monat for /ECZB/UFRS_T_003-monat  obligatory.
+
+SELECTION-SCREEN END OF BLOCK b0.
+
+INITIALIZATION.
+  PERFORM check_auth_load.
+
+  SELECTION-SCREEN FUNCTION KEY 1.
+  CONCATENATE icon_information 'Excel Taslak' INTO
+  sscrfields-functxt_01.
+
+*selection-screen begin of block b1 with frame title text-000.
+*parameters: p_sozno like /ECZB/UFRS_T_002-sozlesme_no,
+*            p_sozid like /ECZB/UFRS_T_002-sozlesme_id,
+*            p_sozve like /ECZB/UFRS_T_002-sozlesme_ver,
+*            p_sozdu like /ECZB/UFRS_T_002-soz_durumu default '01',
+*            p_kirtu like /ECZB/UFRS_T_002-kiralama_turu,
+*            p_lifnr like /ECZB/UFRS_T_002-lifnr.
+*selection-screen uline.
+*parameters: rd_bpb radiobutton group g1 ,
+*            rd_upb radiobutton group g1 default 'X'.
+*selection-screen end of block b1.
+
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_file.
+  PERFORM get_file_name USING p_file.
+
+START-OF-SELECTION.
+
+  IF p_file IS NOT INITIAL.
+    PERFORM upload_excel.
+    PERFORM get_data.
+    IF gt_upload[] IS NOT INITIAL.
+      CALL SCREEN 100.
+    ELSE.
+      MESSAGE text-001 TYPE 'S' DISPLAY LIKE 'E'.
+    ENDIF.
+*    perform update_table.
+  ELSE.
+*    perform get_data_ss.
+  ENDIF.
+
+AT SELECTION-SCREEN .
+  CASE sscrfields-ucomm.
+      WHEN'FC01'.
+      PERFORM download_excel.
+  ENDCASE.
+*  if rd_upb = 'X'.
+*    if not gt_a[] is initial.
+*      call screen 100.
+*    else.
+*      message text-001 type 'S' display like 'E'.
+**    001  Listelenecek veri bulunamadi!
+*    endif.
+*  elseif rd_bpb = 'X'.
+*    if not gt_a_bp[] is initial.
+*      call screen 100.
+*    else.
+*      message text-001 type 'S' display like 'E'.
+**    001  Listelenecek veri bulunamadi!
+*    endif.
+*  endif.
+
+*----------------------------------------------------------------------*
+*       CLASS lcl_event_receiver DEFINITION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS lcl_event_receiver DEFINITION.
+  PUBLIC SECTION.
+    METHODS: data_changed
+               FOR EVENT data_changed OF cl_gui_alv_grid
+               IMPORTING er_data_changed
+                         e_onf4
+                         e_ucomm.
+
+ENDCLASS.                    "lcl_event_receiver DEFINITION
+
+*&---------------------------------------------------------------------*
+*&       Class (Implementation)  lcl_event_receiver
+*&---------------------------------------------------------------------*
+CLASS lcl_event_receiver IMPLEMENTATION.
+  METHOD data_changed.
+    PERFORM data_changed USING er_data_changed e_onf4 e_ucomm.
+  ENDMETHOD.                    "data_changed
+
+ENDCLASS.               "lcl_event_receiver
+*&---------------------------------------------------------------------*
+*&      Form  DATA_CHANGED
+*&---------------------------------------------------------------------*
+FORM data_changed  USING   p_er_data_changed TYPE REF TO
+cl_alv_changed_data_protocol p_onf4 TYPE c e_ucomm TYPE sy-ucomm.
+
+
+  DATA:   l_value     TYPE lvc_value,
+          ls_mod_cell TYPE lvc_s_modi.
+  FIELD-SYMBOLS: <wa> LIKE LINE OF gt_a.
+  LOOP AT p_er_data_changed->mt_mod_cells INTO ls_mod_cell.
+    CALL METHOD p_er_data_changed->get_cell_value
+      EXPORTING
+        i_row_id    = ls_mod_cell-row_id
+        i_fieldname = ls_mod_cell-fieldname
+      IMPORTING
+        e_value     = l_value.
+
+*    case ls_mod_cell-fieldname.
+*
+*
+*    endcase.
+  ENDLOOP.
+
+ENDFORM.                    " DATA_CHANGED
+*&---------------------------------------------------------------------*
+*&      Form  GET_DATA
+*&---------------------------------------------------------------------*
+FORM get_data .
+  DATA:
+        lv_faiz_or        TYPE p LENGTH 11 DECIMALS 9,
+        lv_int            TYPE i,
+        lv_int_main       TYPE i,
+        lv_count          TYPE i,
+        lv_kur_date       TYPE tcurr-gdatu,
+        lv_tkur           TYPE tcurr-ukurs,
+        lv_amt_or1         TYPE p LENGTH 13 DECIMALS 6,
+        lv_amt_or2         TYPE p LENGTH 13 DECIMALS 6,
+        lv_tarih          TYPE /eczb/ufrs_t_002-gec_bit,
+        lv_toplam_nbd     TYPE /eczb/ufrs_t_003-amort_bpb,
+        lv_toplam_vkh     TYPE /eczb/ufrs_t_003-amort_bpb,
+        lv_amort          TYPE /eczb/ufrs_t_003-amort_bpb,
+        lv_monat          TYPE /eczb/ufrs_t_003-monat,
+        lv_toplam_nbd_dov TYPE /eczb/ufrs_t_003-amort_bpb,
+        lv_toplam_vkh_dov TYPE /eczb/ufrs_t_003-amort_bpb,
+        lv_amort_dov      TYPE /eczb/ufrs_t_003-amort_bpb,
+        lv_monat_dov      TYPE /eczb/ufrs_t_003-monat,
+        lv_bitis          TYPE sy-datum,
+        lv_gun            TYPE sy-datum,
+        lv_con_date       TYPE c LENGTH 8,
+        ls_stable         TYPE lvc_s_stbl,
+        lv_sozlesme_id TYPE i,
+        ls_010 TYPE /eczb/ufrs_t_010,
+        lv_soz_id(10).
+
+  DATA: BEGIN OF lt_hesaplama OCCURS  0,
+        gjahr       TYPE /eczb/ufrs_t_003-gjahr,
+        monat_ger   TYPE /eczb/ufrs_t_003-monat,
+        monat       TYPE /eczb/ufrs_t_003-monat,
+        kira_tutari TYPE /eczb/ufrs_t_003-amort_bpb,
+        nbd         TYPE /eczb/ufrs_t_003-amort_bpb,
+        faiz        TYPE /eczb/ufrs_t_003-amort_bpb,
+        amortisman  TYPE /eczb/ufrs_t_003-amort_bpb,
+        faiz2       TYPE /eczb/ufrs_t_003-amort_bpb,
+        kira_yukum  TYPE /eczb/ufrs_t_003-amort_bpb,
+        veri_kull   TYPE /eczb/ufrs_t_003-amort_bpb,
+        END OF lt_hesaplama.
+
+  DATA: ls_hesaplama     LIKE lt_hesaplama,
+        lt_hesaplama_dov LIKE TABLE OF lt_hesaplama WITH HEADER LINE,
+        ls_hesaplama_dov LIKE lt_hesaplama.
+  FIELD-SYMBOLS:<wa_dov> LIKE LINE OF  lt_hesaplama_dov.
+  DATA: lcl_ufrs16 TYPE REF   TO /eczb/cl_ufrs16.
+  DATA: lt_upload   TYPE TABLE OF /eczb/ufrs16_str_01 WITH HEADER LINE,
+        lt_upload_c TYPE TABLE OF /eczb/ufrs16_str_01 WITH HEADER LINE,
+        lt_item     TYPE TABLE OF /eczb/ufrs16_str_02 WITH HEADER LINE,
+        ev_nbd_try_top   TYPE bseg-wrbtr,
+        ev_nbd_eur_top   TYPE bseg-wrbtr,
+        ev_nbd_usd_top   TYPE bseg-wrbtr,
+        ev_nbd_top       TYPE bseg-wrbtr,
+        ev_kira_try_top  TYPE bseg-wrbtr,
+        ev_kira_eur_top  TYPE bseg-wrbtr,
+        ev_kira_usd_top  TYPE bseg-wrbtr,
+        ev_kira_top      TYPE bseg-wrbtr,
+        ev_faiz_try_top  TYPE bseg-wrbtr,
+        ev_faiz_eur_top  TYPE bseg-wrbtr,
+        ev_faiz_usd_top  TYPE bseg-wrbtr,
+        ev_faiz_top      TYPE bseg-wrbtr,
+        ev_amo_try_top   TYPE bseg-wrbtr,
+        ev_amo_eur_top   TYPE bseg-wrbtr,
+        ev_amo_usd_top   TYPE bseg-wrbtr,
+        ev_amo_top       TYPE bseg-wrbtr.
+
+  CLEAR:gt_baslik[],gt_baslik,gt_kalem[],gt_kalem,gt_baslik_1a[],
+        gt_baslik_1a,lt_upload[],lt_upload,lt_upload_c[],lt_upload_c,
+        gt_kalem_n[],gt_kalem_n,gt_upload_hkont[],gt_upload_hkont.
+  ls_stable-col = 'X'.
+  ls_stable-row = 'X'.
+
+  IF lcl_ufrs16 IS INITIAL.
+    CREATE OBJECT lcl_ufrs16.
+  ENDIF.
+
+  LOOP AT gt_upload.
+
+    MOVE-CORRESPONDING gt_upload TO gt_baslik.
+    gt_baslik-wrbtr = gt_upload-tutar_bpb.
+    gt_baslik-dmbtr = gt_upload-tutar_upb.
+
+    IF gt_baslik-sozlesme_id IS INITIAL.
+      CALL FUNCTION 'NUMBER_GET_NEXT'
+        EXPORTING
+          nr_range_nr = '01'
+          object      = '/ECZB/UFRS'
+        IMPORTING
+          number      = lv_sozlesme_id.
+
+      gt_baslik-sozlesme_id = lv_sozlesme_id.
+    ENDIF.
+
+    IF gt_baslik-sozlesme_ver IS INITIAL.
+      gt_baslik-sozlesme_ver = 1.
+    ENDIF.
+
+    IF gt_baslik-sozlesme_no   IS INITIAL AND
+       gt_baslik-kiralama_turu IS NOT INITIAL.
+
+      SELECT SINGLE * FROM /eczb/ufrs_t_010 INTO ls_010
+              WHERE kiralama_turu = gt_baslik-kiralama_turu.
+      IF sy-subrc EQ 0.
+        lv_soz_id = gt_baslik-sozlesme_id.
+        CONCATENATE ls_010-sabit1 gt_baslik-bukrs ls_010-sabit3
+                    ls_010-sabit2 ls_010-sabit3
+                    gt_baslik-gec_bas(4) ls_010-sabit3 lv_soz_id
+                                            INTO gt_baslik-sozlesme_no.
+      ENDIF.
+    ENDIF.
+
+    gt_upload-sozlesme_id  = gt_baslik-sozlesme_id.
+    gt_upload-sozlesme_ver = gt_baslik-sozlesme_ver.
+    gt_upload-sozlesme_no  = gt_baslik-sozlesme_no.
+
+    MOVE-CORRESPONDING gt_upload TO lt_upload.
+    MOVE-CORRESPONDING gt_upload TO gt_upload_hkont.
+    APPEND lt_upload.CLEAR lt_upload.
+    APPEND gt_baslik.CLEAR gt_baslik.
+    APPEND gt_upload_hkont.CLEAR gt_upload_hkont.
+    MODIFY gt_upload.
+  ENDLOOP.
+
+  LOOP AT lt_upload.
+    IF lt_upload-odeme_gunu > 30.
+      CLEAR:lt_upload_c[],lt_upload_c.
+      MOVE-CORRESPONDING lt_upload TO lt_upload_c.
+      APPEND lt_upload_c.CLEAR lt_upload_c.
+
+      CALL METHOD lcl_ufrs16->calculate2
+        EXPORTING
+          it_header = lt_upload_c[]
+        IMPORTING
+          et_item   = lt_item[].
+*        ev_nbd_try_top  = ev_nbd_try_top
+*        ev_nbd_eur_top  = ev_nbd_eur_top
+*        ev_nbd_usd_top  = ev_nbd_usd_top
+*        ev_nbd_top      = ev_nbd_top
+*        ev_kira_try_top = ev_kira_try_top
+*        ev_kira_eur_top = ev_kira_eur_top
+*        ev_kira_usd_top = ev_kira_usd_top
+*        ev_kira_top     = ev_kira_top
+*        ev_faiz_try_top = ev_faiz_try_top
+*        ev_faiz_eur_top = ev_faiz_eur_top
+*        ev_faiz_usd_top = ev_faiz_usd_top
+*        ev_faiz_top     = ev_faiz_top
+*        ev_amo_try_top  = ev_amo_try_top
+*        ev_amo_eur_top  = ev_amo_eur_top
+*        ev_amo_usd_top  = ev_amo_usd_top
+*        ev_amo_top      = ev_amo_top.
+
+    ELSE.
+      CLEAR:lt_upload_c[],lt_upload_c.
+      MOVE-CORRESPONDING lt_upload TO lt_upload_c.
+      APPEND lt_upload_c.CLEAR lt_upload_c.
+
+      CALL METHOD lcl_ufrs16->calculate
+        EXPORTING
+          it_header = lt_upload_c[]
+        IMPORTING
+          et_item   = lt_item[].
+*        ev_nbd_try_top  = ev_nbd_try_top
+*        ev_nbd_eur_top  = ev_nbd_eur_top
+*        ev_nbd_usd_top  = ev_nbd_usd_top
+*        ev_nbd_top      = ev_nbd_top
+*        ev_kira_try_top = ev_kira_try_top
+*        ev_kira_eur_top = ev_kira_eur_top
+*        ev_kira_usd_top = ev_kira_usd_top
+*        ev_kira_top     = ev_kira_top
+*        ev_faiz_try_top = ev_faiz_try_top
+*        ev_faiz_eur_top = ev_faiz_eur_top
+*        ev_faiz_usd_top = ev_faiz_usd_top
+*        ev_faiz_top     = ev_faiz_top
+*        ev_amo_try_top  = ev_amo_try_top
+*        ev_amo_eur_top  = ev_amo_eur_top
+*        ev_amo_usd_top  = ev_amo_usd_top
+*        ev_amo_top      = ev_amo_top.
+
+    ENDIF.
+
+    LOOP AT lt_item.
+      CLEAR:gt_kalem_n.
+      MOVE-CORRESPONDING lt_item TO gt_kalem_n.
+      gt_kalem_n-sozlesme_id  = lt_upload-sozlesme_id.
+      gt_kalem_n-sozlesme_ver = lt_upload-sozlesme_ver.
+      APPEND gt_kalem_n.
+    ENDLOOP.
+*    call function 'MONTHS_BETWEEN_TWO_DATES'
+*      exporting
+*        i_datum_bis = gt_upload-gec_bit
+*        i_datum_von = gt_upload-gec_bas
+*      importing
+*        e_monate    = lv_int.
+*
+*    lv_int = lv_int + 1.
+*    lv_int_main = lv_int + 1.
+*
+*    if lv_int < 12.
+*      clear gt_baslik_1a.
+*      move-corresponding gt_upload to gt_baslik_1a.
+*      gt_baslik_1a-soz_durumu = '03'.
+*      gt_baslik_1a-wrbtr = gt_upload-tutar_bpb.
+*      gt_baslik_1a-dmbtr = gt_upload-tutar_upb.
+*      gt_baslik_1a-uname = sy-uname.
+*      gt_baslik_1a-erdat = sy-datum.
+*      gt_baslik_1a-erzet = sy-uzeit.
+*      gt_baslik_1a-uname_chg = sy-uname.
+*      gt_baslik_1a-erdat_chg = sy-datum.
+*      gt_baslik_1a-erzet_chg = sy-uzeit.
+*      append gt_baslik_1a.
+*      continue.
+*    endif.
+*
+*    move-corresponding gt_upload to gt_baslik.
+*    gt_baslik-wrbtr = gt_upload-tutar_bpb.
+*    gt_baslik-dmbtr = gt_upload-tutar_upb.
+*    gt_baslik-uname = sy-uname.
+*    gt_baslik-erdat = sy-datum.
+*    gt_baslik-erzet = sy-uzeit.
+*    gt_baslik-uname_chg = sy-uname.
+*    gt_baslik-erdat_chg = sy-datum.
+*    gt_baslik-erzet_chg = sy-uzeit.
+*    append gt_baslik.clear gt_baslik.
+*    clear:lv_tarih,lv_count,lv_toplam_nbd,lv_amort,lv_toplam_nbd_dov,
+*    lt_hesaplama[],lt_hesaplama,lt_hesaplama_dov[],lt_hesaplama_dov,
+*    gv_baslangic_kont,lv_amt_or1,lv_tkur,lv_kur_date,lv_con_date,
+*    gt_kira_tutari[],gt_kira_tutari,lv_amt_or2.
+*
+*    lv_faiz_or = gt_upload-faiz_orani / 12.
+*
+*    do lv_int times.
+*      lv_count = lv_count + 1.
+*
+*      if lv_tarih is initial.
+*        lv_tarih = gt_upload-gec_bas.
+*
+*      else.
+*        call function 'RP_CALC_DATE_IN_INTERVAL'
+*          exporting
+*            date      = lv_tarih
+*            days      = 0
+*            months    = 1
+*            signum    = '+'
+*            years     = 0
+*          importing
+*            calc_date = lv_tarih.
+*      endif.
+*      lt_hesaplama-monat_ger   = lv_tarih+4(2).
+*      lt_hesaplama-gjahr       = lv_tarih(4).
+*      lt_hesaplama-monat       = lv_count.
+*      if gt_upload-waers ne 'TRY'.
+*        if gt_upload-tutar_upb is initial.
+*          if gt_upload-kursf is initial.
+*            lv_con_date(2)   = sy-datum+6(2).
+*            lv_con_date+2(2) = sy-datum+4(2).
+*            lv_con_date+4(4) = sy-datum(4).
+*
+*            call function 'CONVERSION_EXIT_INVDT_INPUT'
+*              exporting
+*                input  = lv_con_date
+*              importing
+*                output = lv_kur_date.
+*            select single ukurs from tcurr into lv_tkur
+*              where kurst = 'M'
+*                and fcurr = gt_upload-waers
+*                and tcurr = 'TRY'
+*                and gdatu = lv_kur_date.
+*            lt_hesaplama-kira_tutari = lv_tkur * gt_upload-tutar_bpb .
+*          else.
+*
+*            lt_hesaplama-kira_tutari = gt_upload-kursf *
+*                                       gt_upload-tutar_bpb .
+*          endif.
+*        else.
+*          lt_hesaplama-kira_tutari = gt_upload-tutar_upb.
+*        endif.
+*      else.
+*        lt_hesaplama-kira_tutari = gt_upload-tutar_upb.
+*      endif.
+*
+*      if lv_count = 1 and gt_upload-gec_bas+6(2) ne '01'.
+*        call function 'RP_LAST_DAY_OF_MONTHS'
+*          exporting
+*            day_in            = gt_upload-gec_bas
+*          importing
+*            last_day_of_month = lv_bitis.
+*
+*        if lv_bitis+6(2) is not initial.
+*          lv_gun+6(2) = lv_bitis+6(2) - gt_upload-gec_bas+6(2) + 1.
+*          lv_amt_or1 = lv_gun+6(2) / lv_bitis+6(2).
+*          lt_hesaplama-kira_tutari =
+*          ( lv_gun+6(2) / lv_bitis+6(2) ) * lt_hesaplama-kira_tutari.
+*
+*          clear:gt_kira_tutari.
+*          gt_kira_tutari-sozlesme_id = gt_upload-sozlesme_id.
+*          gt_kira_tutari-monat       = lt_hesaplama-monat.
+*          gt_kira_tutari-dmbtr       = lt_hesaplama-kira_tutari.
+**          gt_kira_tutari-waers       = 'TRY'.
+**          append gt_kira_tutari.clear gt_kira_tutari.
+*        endif.
+*
+*        gv_baslangic_kont = 'X'.
+*
+*      endif.
+*
+*      if lv_count = lv_int and gv_baslangic_kont = 'X'.
+*
+*        call function 'RP_LAST_DAY_OF_MONTHS'
+*          exporting
+*            day_in            = gt_upload-gec_bit
+*          importing
+*            last_day_of_month = lv_bitis.
+*
+*        if lv_bitis+6(2) is not initial.
+*          lv_amt_or2 = gt_upload-gec_bit+6(2) / lv_bitis+6(2).
+*          lt_hesaplama-kira_tutari =
+*          ( gt_upload-gec_bit+6(2) / lv_bitis+6(2) ) *
+*                                             lt_hesaplama-kira_tutari.
+*
+*          clear:gt_kira_tutari.
+*          gt_kira_tutari-sozlesme_id = gt_upload-sozlesme_id.
+*          gt_kira_tutari-monat       = lt_hesaplama-monat.
+*          gt_kira_tutari-dmbtr       = lt_hesaplama-kira_tutari.
+**          gt_kira_tutari-waers       = 'TRY'.
+**          append gt_kira_tutari.clear gt_kira_tutari.
+*        endif.
+*
+*      endif.
+*
+*      lt_hesaplama-nbd = lt_hesaplama-kira_tutari /
+*                       ( ( 1 + lv_faiz_or ) ** lv_count ).
+*
+*      lt_hesaplama-faiz = lt_hesaplama-kira_tutari - lt_hesaplama-nbd.
+*      add lt_hesaplama-nbd to lv_toplam_nbd.
+*
+*
+*
+*      if gt_upload-waers ne 'TRY'.
+*
+*        lt_hesaplama_dov-monat_ger   = lv_tarih+4(2).
+*        lt_hesaplama_dov-gjahr       = lv_tarih(4).
+*        lt_hesaplama_dov-monat = lv_count.
+*        lt_hesaplama_dov-kira_tutari = gt_upload-tutar_bpb.
+*
+*        if lv_count = 1 and gt_upload-gec_bas+6(2) ne '01'.
+*          call function 'RP_LAST_DAY_OF_MONTHS'
+*            exporting
+*              day_in            = gt_upload-gec_bas
+*            importing
+*              last_day_of_month = lv_bitis.
+*
+*          if lv_bitis+6(2) is not initial.
+*            lv_gun+6(2) = lv_bitis+6(2) - gt_upload-gec_bas+6(2) + 1.
+*            lv_amt_or1 = lv_gun+6(2) / lv_bitis+6(2).
+*            lt_hesaplama_dov-kira_tutari =
+*            ( lv_gun+6(2) / lv_bitis+6(2) ) *
+*
+*lt_hesaplama_dov-kira_tutari.
+**            clear:gt_kira_tutari.
+*            gt_kira_tutari-sozlesme_id = gt_upload-sozlesme_id.
+*            gt_kira_tutari-monat       = lt_hesaplama_dov-monat.
+*            gt_kira_tutari-wrbtr       = lt_hesaplama_dov-kira_tutari.
+*            gt_kira_tutari-waers       = gt_upload-waers.
+*            append gt_kira_tutari.clear gt_kira_tutari.
+*          endif.
+*
+*          gv_baslangic_kont = 'X'.
+*
+*        endif.
+*
+*        if lv_count = lv_int and gv_baslangic_kont = 'X'.
+*
+*          call function 'RP_LAST_DAY_OF_MONTHS'
+*            exporting
+*              day_in            = gt_upload-gec_bit
+*            importing
+*              last_day_of_month = lv_bitis.
+*
+*          if lv_bitis+6(2) is not initial.
+*            lv_amt_or2 = gt_upload-gec_bit+6(2) / lv_bitis+6(2).
+*
+*            lt_hesaplama_dov-kira_tutari =
+*            ( gt_upload-gec_bit+6(2) / lv_bitis+6(2) ) *
+*
+*lt_hesaplama_dov-kira_tutari.
+**            clear:gt_kira_tutari.
+*            gt_kira_tutari-sozlesme_id = gt_upload-sozlesme_id.
+*            gt_kira_tutari-monat       = lt_hesaplama_dov-monat.
+*            gt_kira_tutari-wrbtr       = lt_hesaplama_dov-kira_tutari.
+*            gt_kira_tutari-waers       = gt_upload-waers.
+*            append gt_kira_tutari.clear gt_kira_tutari.
+*          endif.
+*
+*        endif.
+*
+*        lt_hesaplama_dov-nbd = lt_hesaplama_dov-kira_tutari /
+*                         ( ( 1 + lv_faiz_or ) ** lv_count ).
+*        lt_hesaplama_dov-faiz = lt_hesaplama_dov-kira_tutari -
+*                                                 lt_hesaplama_dov-nbd.
+*
+*        add lt_hesaplama_dov-nbd to lv_toplam_nbd_dov.
+*        append lt_hesaplama_dov. clear lt_hesaplama_dov.
+*
+*      endif.
+*
+*      append lt_hesaplama.clear lt_hesaplama.
+*
+*    enddo.
+*
+*    clear:lt_hesaplama,lv_monat,lv_count.
+*
+*    "0.dönemin eklenmesi
+*    lt_hesaplama-monat = 0.
+*    read table lt_hesaplama into ls_hesaplama index 1.
+*    if sy-subrc eq 0.
+*      lt_hesaplama-monat_ger = ls_hesaplama-monat_ger.
+*      lt_hesaplama-gjahr     = ls_hesaplama-gjahr.
+*    endif.
+*    lt_hesaplama-kira_yukum = lv_toplam_nbd.
+*    lt_hesaplama-veri_kull  = lv_toplam_nbd.
+*    append lt_hesaplama. clear lt_hesaplama.
+*
+*    if gt_upload-gec_bas+6(2) ne '01'.
+*      lv_int = lv_int - 1.
+*    endif.
+*
+*    if lv_int is not initial.
+*      lv_amort = lv_toplam_nbd / lv_int.
+*    endif.
+*
+*    if gt_upload-waers ne 'TRY'.
+*      "0.dönemin eklenmesi
+*      lt_hesaplama_dov-monat = 0.
+*      read table lt_hesaplama_dov into ls_hesaplama_dov index 1.
+*      if sy-subrc eq 0.
+*        lt_hesaplama_dov-monat_ger = ls_hesaplama_dov-monat_ger.
+*        lt_hesaplama_dov-gjahr     = ls_hesaplama_dov-gjahr.
+*      endif.
+*      lt_hesaplama_dov-kira_yukum = lv_toplam_nbd_dov.
+*      lt_hesaplama_dov-veri_kull  = lv_toplam_nbd_dov.
+*      append lt_hesaplama_dov. clear lt_hesaplama_dov.
+*
+*      lv_amort_dov      = lv_toplam_nbd_dov / lv_int.
+*    endif.
+*    if gt_upload-gec_bas+6(2) ne '01'.
+*      lv_int = lv_int + 2.
+*    else.
+*      lv_int = lv_int + 1.
+*    endif.
+*    sort lt_hesaplama     by monat.
+*    sort lt_hesaplama_dov by monat.
+*    loop at lt_hesaplama.
+*      lv_count = lv_count + 1.
+*      loop at  lt_hesaplama_dov where monat = lt_hesaplama-monat.
+*
+*        lv_monat = lt_hesaplama-monat.
+*
+*        if lt_hesaplama-monat ne 0.
+*          if lv_count = 2 and lv_amt_or1 is not initial.
+*            lt_hesaplama-amortisman = lv_amort * lv_amt_or1.
+*          elseif lv_count = lv_int and lv_amt_or2 is not initial.
+*            lt_hesaplama-amortisman = lv_amort * lv_amt_or2.
+*          else.
+*            lt_hesaplama-amortisman = lv_amort.
+*          endif.
+*
+*          read table lt_hesaplama into ls_hesaplama index lv_int_main.
+*          if sy-subrc eq 0.
+*            lt_hesaplama-faiz2 = ls_hesaplama-faiz.
+*          endif.
+*
+*          lv_monat = lv_monat - 1.
+*
+*          read table lt_hesaplama into ls_hesaplama with key monat =
+*          lv_monat.
+*          if sy-subrc eq 0.
+*            lt_hesaplama-kira_yukum =
+*            ( ls_hesaplama-kira_yukum + lt_hesaplama-faiz2 ) -
+*                                             lt_hesaplama-kira_tutari.
+*            lt_hesaplama-veri_kull =
+*            ( ls_hesaplama-veri_kull - lt_hesaplama-amortisman ).
+*          endif.
+*
+*          "dövizliler için hesaplama
+*          if lv_count = 2 and lv_amt_or1 is not initial.
+*            lt_hesaplama_dov-amortisman = lv_amort_dov * lv_amt_or1.
+*          elseif lv_count = lv_int and lv_amt_or2 is not initial.
+*            lt_hesaplama_dov-amortisman = lv_amort_dov * lv_amt_or2.
+*          else.
+*            lt_hesaplama_dov-amortisman = lv_amort_dov.
+*          endif.
+*
+*          read table lt_hesaplama_dov
+*                              into ls_hesaplama_dov index lv_int_main.
+*          if sy-subrc eq 0.
+*            lt_hesaplama_dov-faiz2 = ls_hesaplama_dov-faiz.
+*          endif.
+*
+*          read table lt_hesaplama_dov into
+*                           ls_hesaplama_dov with key monat = lv_monat.
+*          if sy-subrc eq 0.
+*            lt_hesaplama_dov-kira_yukum =
+*           ( ls_hesaplama_dov-kira_yukum + lt_hesaplama_dov-faiz2 ) -
+*                                         lt_hesaplama_dov-kira_tutari.
+*            lt_hesaplama_dov-veri_kull =
+*        ( ls_hesaplama_dov-veri_kull - lt_hesaplama_dov-amortisman ).
+*          endif.
+*
+*          gt_kalem-sozlesme_id = gt_upload-sozlesme_id.
+*          gt_kalem-bukrs       = gt_upload-bukrs.
+*          gt_kalem-gjahr       = lt_hesaplama-gjahr.
+*          gt_kalem-monat       = lt_hesaplama-monat.
+*          gt_kalem-monat_ger   = lt_hesaplama-monat_ger.
+*
+*          sort gt_kira_tutari by waers descending.
+*          loop at gt_kira_tutari where
+*                                 sozlesme_id = gt_kalem-sozlesme_id and
+*                                 monat       = gt_kalem-monat.
+**            if gt_kira_tutari-waers = 'TRY'.
+**              gt_kalem-dmbtr = gt_kira_tutari-tutar.
+**              gt_kalem-wrbtr = gt_kira_tutari-tutar.
+**            else.
+**              gt_kalem-wrbtr = gt_kira_tutari-tutar.
+**            endif.
+*            gt_kalem-dmbtr = gt_kira_tutari-dmbtr.
+*            gt_kalem-wrbtr = gt_kira_tutari-wrbtr.
+*          endloop.
+*          if sy-subrc ne 0.
+**            if gt_upload-waers = 'TRY'.
+**              gt_kalem-dmbtr = gt_upload-tutar_upb.
+**            else.
+**              if gt_upload-tutar_bpb is not initial.
+**                gt_kalem-wrbtr = gt_upload-tutar_bpb.
+**              else.
+**                if gt_upload-kursf is not initial.
+**                  gt_kalem-wrbtr = gt_upload-tutar_upb *
+**
+**            gt_upload-kursf.
+**                else.
+**                  gt_kalem-wrbtr = gt_upload-tutar_upb * lv_tkur.
+**                endif.
+**              endif.
+**            endif.
+*            gt_kalem-dmbtr = gt_upload-tutar_upb.
+*            gt_kalem-wrbtr = gt_upload-tutar_bpb.
+*          endif.
+*
+*          gt_kalem-kul_hak_bpb    = lt_hesaplama_dov-veri_kull.
+*          gt_kalem-yukumluluk_bpb = lt_hesaplama_dov-kira_yukum.
+*          gt_kalem-amort_bpb      = lt_hesaplama_dov-amortisman.
+*          gt_kalem-faiz_bpb       = lt_hesaplama_dov-faiz2.
+*
+*
+*          gt_kalem-kul_hak_upb    = lt_hesaplama-veri_kull.
+*          gt_kalem-yukumluluk_upb = lt_hesaplama-kira_yukum.
+*          gt_kalem-amort_upb      = lt_hesaplama-amortisman.
+*          gt_kalem-faiz_upb       = lt_hesaplama-faiz2.
+*          if lv_count = lv_int.
+*            add gt_kalem-kul_hak_bpb to gt_kalem-faiz_bpb.
+*            gt_kalem-kul_hak_bpb = 0.
+*
+*            add gt_kalem-kul_hak_upb to gt_kalem-faiz_upb.
+*            gt_kalem-kul_hak_upb = 0.
+*          endif.
+*          lv_int_main = lv_int_main - 1.
+*
+*          append gt_kalem. clear: gt_kalem.
+*
+*          modify lt_hesaplama.
+*          modify lt_hesaplama_dov.
+*        else.
+*          clear gt_kalem.
+*          gt_kalem-sozlesme_id    = gt_upload-sozlesme_id.
+*          gt_kalem-bukrs          = gt_upload-bukrs.
+*          gt_kalem-gjahr          = lt_hesaplama-gjahr.
+*          gt_kalem-kul_hak_upb    = lv_toplam_nbd.
+*          gt_kalem-yukumluluk_upb = lv_toplam_nbd.
+*          gt_kalem-kul_hak_bpb    = lv_toplam_nbd_dov.
+*          gt_kalem-yukumluluk_bpb = lv_toplam_nbd_dov.
+*          gt_kalem-monat          = lt_hesaplama-monat.
+*          gt_kalem-monat_ger      = lt_hesaplama-monat_ger.
+*          append gt_kalem. clear: gt_kalem.
+*        endif.
+*      endloop.
+*      if sy-subrc ne 0.
+*        lv_monat = lt_hesaplama-monat.
+*
+*        if lt_hesaplama-monat ne 0.
+*          if lv_count = 2 and lv_amt_or1 is not initial.
+*            lt_hesaplama-amortisman = lv_amort * lv_amt_or1.
+*          elseif lv_count = lv_int and lv_amt_or2 is not initial.
+*            lt_hesaplama-amortisman = lv_amort * lv_amt_or2.
+*          else.
+*            lt_hesaplama-amortisman = lv_amort.
+*          endif.
+*          read table lt_hesaplama into ls_hesaplama index lv_int_main.
+*          if sy-subrc eq 0.
+*            lt_hesaplama-faiz2 = ls_hesaplama-faiz.
+*          endif.
+*
+*          lv_monat = lv_monat - 1.
+*
+*          read table lt_hesaplama into ls_hesaplama with key monat =
+*          lv_monat.
+*          if sy-subrc eq 0.
+*            lt_hesaplama-kira_yukum =
+*            ( ls_hesaplama-kira_yukum + lt_hesaplama-faiz2 ) -
+*                                             lt_hesaplama-kira_tutari.
+*            lt_hesaplama-veri_kull =
+*            ( ls_hesaplama-veri_kull - lt_hesaplama-amortisman ).
+*          endif.
+*
+*          gt_kalem-sozlesme_id = gt_upload-sozlesme_id.
+*          gt_kalem-bukrs       = gt_upload-bukrs.
+*          gt_kalem-gjahr       = lt_hesaplama-gjahr.
+*          gt_kalem-monat       = lt_hesaplama-monat.
+*          gt_kalem-monat_ger   = lt_hesaplama-monat_ger.
+*
+*          sort gt_kira_tutari by waers descending.
+*          loop at gt_kira_tutari where
+*                                 sozlesme_id = gt_kalem-sozlesme_id and
+*                                 monat       = gt_kalem-monat.
+**            if gt_kira_tutari-waers = 'TRY'.
+**              gt_kalem-dmbtr = gt_kira_tutari-tutar.
+**              gt_kalem-wrbtr = gt_kira_tutari-tutar.
+**            else.
+**              gt_kalem-wrbtr = gt_kira_tutari-tutar.
+**            endif.
+*            gt_kalem-dmbtr = gt_kira_tutari-dmbtr.
+*            gt_kalem-wrbtr = gt_kira_tutari-wrbtr.
+*          endloop.
+*          if sy-subrc ne 0.
+**            if gt_upload-waers = 'TRY'.
+**              gt_kalem-dmbtr = gt_upload-tutar_upb.
+**            else.
+**              if gt_upload-tutar_bpb is not initial.
+**                gt_kalem-wrbtr = gt_upload-tutar_bpb.
+**              else.
+**                if gt_upload-kursf is not initial.
+**                  gt_kalem-wrbtr = gt_upload-tutar_upb *
+**
+**gt_upload-kursf.
+**                else.
+**                  gt_kalem-wrbtr = gt_upload-tutar_upb * lv_tkur.
+**                endif.
+**              endif.
+**            endif.
+*            gt_kalem-dmbtr = gt_upload-tutar_upb.
+*            gt_kalem-wrbtr = gt_upload-tutar_bpb.
+*          endif.
+*
+*          gt_kalem-kul_hak_bpb    = lt_hesaplama-veri_kull.
+*          gt_kalem-yukumluluk_bpb = lt_hesaplama-kira_yukum.
+*          gt_kalem-amort_bpb      = lt_hesaplama-amortisman.
+*          gt_kalem-faiz_bpb       = lt_hesaplama-faiz2.
+*
+*          gt_kalem-kul_hak_upb    = lt_hesaplama-veri_kull.
+*          gt_kalem-yukumluluk_upb = lt_hesaplama-kira_yukum.
+*          gt_kalem-amort_upb      = lt_hesaplama-amortisman.
+*          gt_kalem-faiz_upb       = lt_hesaplama-faiz2.
+*          if lv_count = lv_int.
+*            add gt_kalem-kul_hak_bpb to gt_kalem-faiz_bpb.
+*            gt_kalem-kul_hak_bpb = 0.
+*
+*            add gt_kalem-kul_hak_upb to gt_kalem-faiz_upb.
+*            gt_kalem-kul_hak_upb = 0.
+*          endif.
+*          lv_int_main = lv_int_main - 1.
+*          append gt_kalem. clear: gt_kalem.
+*
+*          modify lt_hesaplama.
+*        else.
+*          clear gt_kalem.
+*          gt_kalem-sozlesme_id    = gt_upload-sozlesme_id.
+*          gt_kalem-bukrs          = gt_upload-bukrs.
+*          gt_kalem-gjahr          = lt_hesaplama-gjahr.
+*          gt_kalem-kul_hak_upb    = lv_toplam_nbd.
+*          gt_kalem-yukumluluk_upb = lv_toplam_nbd.
+*          gt_kalem-kul_hak_bpb    = lv_toplam_nbd.
+*          gt_kalem-yukumluluk_bpb = lv_toplam_nbd.
+*          gt_kalem-monat          = lt_hesaplama-monat.
+*          gt_kalem-monat_ger      = lt_hesaplama-monat_ger.
+*          append gt_kalem. clear: gt_kalem.
+*        endif.
+*      endif.
+*    endloop.
+  ENDLOOP.
+
+*  gt_kalem_main[] = gt_kalem[].
+*  perform get_alv_data.
+
+ENDFORM.                    " GET_DATA
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0100  OUTPUT
+*&---------------------------------------------------------------------*
+MODULE status_0100 OUTPUT.
+  DATA: linne1 TYPE i.
+  DESCRIBE TABLE gt_a LINES linne1.
+  SET PF-STATUS 'GUI'.
+  SET TITLEBAR  'GUI_TITLE' WITH linne1.
+
+  IF gt_container IS INITIAL.
+    PERFORM create_and_init_alv.
+  ENDIF.
+
+ENDMODULE.                 " STATUS_0100  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0100  INPUT
+*&---------------------------------------------------------------------*
+MODULE user_command_0100 INPUT.
+  ok_code = sy-ucomm.
+
+  CALL METHOD grid1->check_changed_data( ).
+
+  CASE ok_code.
+    WHEN '&F03' OR '&F15'.
+      LEAVE TO SCREEN 0.
+    WHEN '&F12'.
+      LEAVE PROGRAM.
+    WHEN '&IC1'.
+    WHEN 'SAVE'.
+      PERFORM check_auth_save.
+      PERFORM update_table.
+    WHEN 'PDF'.
+      PERFORM update_pdf.
+    WHEN 'SIMU'.
+*      perform simulasyon.
+*      if rd_bpb = 'X'.
+*        if gt_kayit_gos_bp[] is not initial.
+*          perform display_alv_bp.
+*        endif.
+*      elseif rd_upb = 'X'.
+*        if gt_kayit_gos[] is not initial.
+*          perform display_alv.
+*        endif.
+*      endif.
+    WHEN OTHERS.
+
+  ENDCASE.
+  CLEAR: ok_code.
+
+ENDMODULE.                 " USER_COMMAND_0100  INPUT
+*&---------------------------------------------------------------------*
+*&      Form  CREATE_AND_INIT_ALV
+*&---------------------------------------------------------------------*
+FORM create_and_init_alv .
+  DATA: it_lvcfcat TYPE lvc_t_fcat.
+  DATA: ll_fc LIKE LINE OF gt_fc.
+
+  CREATE OBJECT gt_container
+    EXPORTING
+      container_name              = mycontainer
+    EXCEPTIONS
+      cntl_error                  = 1
+      cntl_system_error           = 2
+      create_error                = 3
+      lifetime_error              = 4
+      lifetime_dynpro_dynpro_link = 5.
+
+  CREATE OBJECT grid1
+    EXPORTING
+      i_parent = gt_container.
+
+  gs_layout-zebra      = 'X'.
+  gs_layout-sel_mode   = 'D'.
+  gs_layout-cwidth_opt = 'X'.
+
+  CALL FUNCTION 'REUSE_ALV_FIELDCATALOG_MERGE'
+    EXPORTING
+      i_program_name     = sy-repid
+      i_internal_tabname = 'GT_UPLOAD'
+      i_inclname         = sy-repid
+    CHANGING
+      ct_fieldcat        = gt_fieldcat.
+
+  CALL FUNCTION 'LVC_TRANSFER_FROM_SLIS'
+    EXPORTING
+      it_fieldcat_alv = gt_fieldcat
+    IMPORTING
+      et_fieldcat_lvc = gt_fc
+    TABLES
+      it_data         = gt_upload.
+
+  DEFINE set_text.
+    wa_fc-scrtext_s = wa_fc-scrtext_m =
+    wa_fc-seltext   = wa_fc-reptext   =
+    wa_fc-scrtext_l = &1.
+  END-OF-DEFINITION.
+
+  LOOP AT gt_fc INTO wa_fc.
+    CASE wa_fc-fieldname.
+      WHEN 'MONAT_GER'.
+        wa_fc-lzero = 'X'.
+      WHEN 'LIFNR_T'.
+        set_text 'Kiralama Firmasi metni'.
+        wa_fc-col_pos = 12.
+      WHEN 'SOZLESME_NO'.
+        set_text 'Sözlesme No'.
+      WHEN 'GJAHR'.
+        set_text 'Mali yil'.
+      WHEN 'SOZLESME_ID'.
+        set_text 'Sözlesme ID'.
+      WHEN 'GSBER'.
+        set_text 'Is Alani'.
+      WHEN 'BUKRS'.
+        set_text 'Sirket Kodu'.
+      WHEN 'SOZLESME_VER'.
+        set_text 'Sözlesme Versiyonu'.
+      WHEN 'SOZ_DURUMU'       .
+        set_text 'Sözlesme Durumu'.
+      WHEN 'KIRATURU_T'       .
+        set_text 'Kiramalama türü metin'.
+        wa_fc-col_pos = 8.
+      WHEN 'SOZ_DURUMU_T'       .
+        set_text 'Sözlesme Durumu metin'.
+        wa_fc-col_pos = 3.
+      WHEN 'MONAT'       .
+        wa_fc-lzero = 'X'.
+        set_text 'Sözlesme Dönemi'.
+      WHEN 'GEC_BAS'       .
+        set_text 'Geçerlilik Başlangiç Tarihi'.
+      WHEN 'GEC_BIT'       .
+        set_text 'Geçerlilik Bitiş Tarihi'.
+      WHEN 'LIFNR'         .
+        set_text 'Kiralama Firmasi'.
+      WHEN 'WAERS'         .
+        set_text 'Sözlesme Para Birimi'.
+      WHEN 'AUFNR'         .
+        set_text 'Iç Siparis'.
+      WHEN 'KUL_HAK'   .
+        set_text 'Kullanim Hakki Tutari'.
+      WHEN 'YUKUMLULUK'.
+        set_text 'Yükümlülük Tutari'.
+      WHEN 'AYLIK_KIRA'    .
+        set_text 'Aylik Kira Bedeli'.
+      WHEN 'AMORT'     .
+        set_text 'Amortisman Tutari'.
+      WHEN 'FAIZ'      .
+        set_text 'Faiz Tutari'.
+      WHEN 'VERI_KUL'.
+        set_text 'Veri Kullanım Hakkı'.
+      WHEN 'KIRA_YUK_K'.
+        set_text 'Kira Yükümlülüğü Kısa'.
+      WHEN 'KIRA_YUK_U'.
+        set_text 'Kira Yükümlülüğü Uzun'.
+      WHEN 'AMORT_HES'.
+        set_text 'Amortisman Hesabı'.
+      WHEN 'FAIZ_HES'.
+        set_text 'Faiz Hesabı'.
+      WHEN 'AMORT_GID'.
+        set_text 'Amortisman Gider Hesabı'.
+      WHEN 'FAIZ_GID'.
+        set_text 'Faiz Gider Hesabı'.
+      WHEN 'SOZ_BAS_TAR'.
+        set_text 'Sözleşme Başlangıç Tarihi'.
+        wa_fc-col_pos = 5.
+    ENDCASE.
+
+    MODIFY gt_fc FROM wa_fc.
+  ENDLOOP.
+
+  PERFORM exclude_tb_functions CHANGING gt_exclude.
+
+
+  CALL METHOD grid1->set_table_for_first_display
+    EXPORTING
+      is_layout            = gs_layout
+      it_toolbar_excluding = gt_exclude
+      is_variant           = is_variant
+      i_save               = 'X'
+    CHANGING
+      it_fieldcatalog      = gt_fc[]
+      it_outtab            = gt_upload[].
+
+  CREATE OBJECT event_receiver.
+  SET HANDLER event_receiver->data_changed FOR grid1.
+
+  CALL METHOD grid1->set_toolbar_interactive.
+  CALL METHOD grid1->refresh_table_display.
+  CALL METHOD grid1->register_edit_event
+    EXPORTING
+      i_event_id = cl_gui_alv_grid=>mc_evt_modified.
+
+  CALL METHOD grid1->register_edit_event
+    EXPORTING
+      i_event_id = cl_gui_alv_grid=>mc_evt_enter.
+
+ENDFORM.                    " CREATE_AND_INIT_ALV
+*&---------------------------------------------------------------------*
+*&      Form  EXCLUDE_TB_FUNCTIONS
+*&---------------------------------------------------------------------*
+FORM exclude_tb_functions  CHANGING pt_exclude TYPE ui_functions.
+  DATA ls_exclude TYPE ui_func.
+  ls_exclude = cl_gui_alv_grid=>mc_fc_loc_copy_row.
+  APPEND ls_exclude TO pt_exclude.
+  ls_exclude = cl_gui_alv_grid=>mc_fc_loc_delete_row.
+  APPEND ls_exclude TO pt_exclude.
+  ls_exclude = cl_gui_alv_grid=>mc_fc_loc_append_row.
+  APPEND ls_exclude TO pt_exclude.
+  ls_exclude = cl_gui_alv_grid=>mc_fc_loc_insert_row.
+  APPEND ls_exclude TO pt_exclude.
+  ls_exclude = cl_gui_alv_grid=>mc_fc_loc_move_row.
+  APPEND ls_exclude TO pt_exclude.
+  ls_exclude = cl_gui_alv_grid=>mc_fc_loc_copy.
+  APPEND ls_exclude TO pt_exclude.
+  ls_exclude = cl_gui_alv_grid=>mc_fc_loc_cut.
+  APPEND ls_exclude TO pt_exclude.
+  ls_exclude = cl_gui_alv_grid=>mc_fc_loc_paste.
+  APPEND ls_exclude TO pt_exclude.
+  ls_exclude = cl_gui_alv_grid=>mc_fc_loc_paste_new_row.
+  APPEND ls_exclude TO pt_exclude.
+  ls_exclude = cl_gui_alv_grid=>mc_fc_loc_undo.
+  APPEND ls_exclude TO pt_exclude.
+ENDFORM.                    " EXCLUDE_TB_FUNCTIONS
+*&---------------------------------------------------------------------*
+*&      Form  get_file_name
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->FILE_DIRECTORY  text
+*----------------------------------------------------------------------*
+FORM get_file_name  USING   file_directory.
+  DATA: lv_name LIKE sy-repid.
+  lv_name = sy-repid..
+  CALL FUNCTION 'KD_GET_FILENAME_ON_F4'
+    EXPORTING
+      program_name  = lv_name
+      dynpro_number = syst-dynnr
+      static        = 'X'
+    CHANGING
+      file_name     = file_directory.
+ENDFORM.                    " GET_FILE_NAME
+*&---------------------------------------------------------------------*
+*&      Form  UPLOAD_EXCEL
+*&---------------------------------------------------------------------*
+FORM upload_excel .
+  DATA: idata LIKE alsmex_tabline OCCURS 0 WITH HEADER LINE.
+  CHECK p_file NE space.
+  CALL FUNCTION 'ALSM_EXCEL_TO_INTERNAL_TABLE'
+    EXPORTING
+      filename                = p_file
+      i_begin_col             = '1'
+      i_begin_row             = '2'
+      i_end_col               = '50'
+      i_end_row               = '65536'
+    TABLES
+      intern                  = idata
+    EXCEPTIONS
+      inconsistent_parameters = 1
+      upload_ole              = 2
+      OTHERS                  = 3.
+  IF sy-subrc <> 0.
+    MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    STOP.
+  ENDIF.
+
+  READ TABLE idata INDEX 1.
+
+  DATA: gd_currentrow TYPE i.
+  gd_currentrow = idata-row.
+
+  LOOP AT idata.
+    REPLACE ',' WITH '.' INTO idata-value.
+    MODIFY idata.
+  ENDLOOP.
+
+  LOOP AT idata.
+
+    IF idata-row NE gd_currentrow.
+      APPEND gt_upload.  CLEAR gt_upload.
+      gd_currentrow = idata-row.
+    ENDIF.
+    CASE idata-col.
+*      when '0001'. gt_upload-sozlesme_id    = idata-value.
+*      when '0002'. gt_upload-sozlesme_ver   = idata-value.
+
+      WHEN '0001'. gt_upload-bukrs          = idata-value.
+      WHEN '0002'.
+        CALL FUNCTION 'CONVERT_DATE_TO_INTERNAL'
+          EXPORTING
+            date_external = idata-value
+          IMPORTING
+            date_internal = gt_upload-gec_bas.
+      WHEN '0003'.
+
+        CALL FUNCTION 'CONVERT_DATE_TO_INTERNAL'
+          EXPORTING
+            date_external = idata-value
+          IMPORTING
+            date_internal = gt_upload-gec_bit.
+      WHEN '0004'. gt_upload-kiralama_turu     = idata-value.
+      WHEN '0005'. gt_upload-soz_durumu        = idata-value.
+      WHEN '0006'. gt_upload-lifnr             = idata-value.
+      WHEN '0007'. gt_upload-waers             = idata-value.
+      WHEN '0008'. gt_upload-tutar_upb         = idata-value.
+      WHEN '0009'. gt_upload-tutar_bpb         = idata-value.
+      WHEN '0010'. gt_upload-kursf             = idata-value.
+      WHEN '0011'. gt_upload-gsber             = idata-value.
+      WHEN '0012'. gt_upload-kostl             = idata-value.
+      WHEN '0013'. gt_upload-aufnr             = idata-value.
+      WHEN '0014'. gt_upload-faiz_orani        = idata-value.
+      WHEN '0015'. gt_upload-veri_kul          = idata-value.
+      WHEN '0016'. gt_upload-kira_yuk_k        = idata-value.
+      WHEN '0017'. gt_upload-kira_yuk_u        = idata-value.
+      WHEN '0018'. gt_upload-amort_hes         = idata-value.
+      WHEN '0019'. gt_upload-faiz_hes          = idata-value.
+      WHEN '0020'. gt_upload-faiz_hes_uz       = idata-value.
+      WHEN '0021'. gt_upload-amort_gid         = idata-value.
+      WHEN '0022'. gt_upload-faiz_gid          = idata-value.
+      WHEN '0023'. gt_upload-faiz_gid_uz       = idata-value.
+
+      WHEN '0024'. gt_upload-kira_gider        = idata-value.
+      WHEN '0025'. gt_upload-geri_cekme        = idata-value.
+      WHEN '0026'. gt_upload-kira_gider_uv     = idata-value.
+
+      WHEN '0027'. gt_upload-txt50             = idata-value.
+      WHEN '0028'. gt_upload-fat_gunu          = idata-value.
+      WHEN '0029'. gt_upload-odeme_kos         = idata-value.
+      WHEN '0030'. gt_upload-odeme_gunu        = idata-value.
+      WHEN '0031'. gt_upload-odeme_turu        = idata-value.
+      WHEN '0032'. gt_upload-artis_or          = idata-value.
+      WHEN '0033'. gt_upload-plaka             = idata-value.
+      WHEN '0034'. gt_upload-pfkber            = idata-value.
+      WHEN '0035'. gt_upload-matbu_no          = idata-value.
+      WHEN '0036'. gt_upload-odeme_period      = idata-value.
+      WHEN '0037'. gt_upload-odeme_zamani      = idata-value.
+      WHEN '0038'. gt_upload-satin_alma_op     = idata-value.
+      WHEN '0039'. gt_upload-yenileme_op       = idata-value.
+      WHEN '0040'. gt_upload-fesih_op          = idata-value.
+      WHEN '0041'. gt_upload-satin_alma_op_txt = idata-value.
+      WHEN '0042'. gt_upload-yenileme_op_txt   = idata-value.
+      WHEN '0043'. gt_upload-fesih_op_txt      = idata-value.
+      WHEN '0044'. gt_upload-vbund             = idata-value.
+      WHEN '0045'.
+        CALL FUNCTION 'CONVERT_DATE_TO_INTERNAL'
+          EXPORTING
+            date_external = idata-value
+          IMPORTING
+            date_internal = gt_upload-soz_bas_tar.
+      WHEN '0046'.
+        CALL FUNCTION 'CONVERT_DATE_TO_INTERNAL'
+          EXPORTING
+            date_external = idata-value
+          IMPORTING
+            date_internal = gt_upload-ilk_odm_tar.
+      WHEN '0047'. gt_upload-prctr         = idata-value.
+      WHEN '0048'. gt_upload-sabit_faiz    = idata-value.
+      WHEN '0049'. gt_upload-gaag          = idata-value.
+    ENDCASE.
+  ENDLOOP.
+  APPEND gt_upload.  CLEAR gt_upload.
+
+  LOOP AT gt_upload.
+    IF gt_upload-ilk_odm_tar IS NOT INITIAL AND
+       gt_upload-odeme_gunu IS NOT INITIAL.
+      CLEAR:gt_upload-odeme_gunu.
+      MODIFY gt_upload.
+    ENDIF.
+  ENDLOOP.
+
+ENDFORM.                    " UPLOAD_EXCEL
+*&---------------------------------------------------------------------*
+*&      Form  SIMULASYON
+*&---------------------------------------------------------------------*
+FORM simulasyon .
+*
+*  if rd_bpb = 'X'.
+*    clear:gt_kayit_gos_bp[],gt_kayit_gos_bp.
+*    loop at gt_a_bp where monat = 0.
+*      read table gt_upload_hkont with key sozlesme_id =
+*      gt_a_bp-sozlesme_id.
+*      check sy-subrc eq 0.
+*      gt_kayit_gos_bp-sozlesme_id  = gt_a_bp-sozlesme_id.
+*      gt_kayit_gos_bp-hkont        = gt_upload_hkont-kira_yuk_u.
+*      "alacak hesabi
+*      gt_kayit_gos_bp-shkzg        = 'H'.
+*      gt_kayit_gos_bp-tutar        = gt_a_bp-yukumluluk_bpb.
+*      gt_kayit_gos_bp-tutar_up     = gt_a_bp-yukumluluk_upb.
+*      gt_kayit_gos_bp-waers_t      = 'TRY'.
+*      gt_kayit_gos_bp-waers        = gt_a_bp-waers.
+*      collect gt_kayit_gos_bp.clear gt_kayit_gos_bp.
+*
+*      gt_kayit_gos_bp-sozlesme_id  = gt_a_bp-sozlesme_id.
+*      gt_kayit_gos_bp-hkont = gt_upload_hkont-veri_kul."borç hesabi
+*      gt_kayit_gos_bp-shkzg = 'S'.
+*      gt_kayit_gos_bp-tutar = gt_a_bp-kul_hak_bpb.
+*      gt_kayit_gos_bp-tutar_up = gt_a_bp-kul_hak_upb.
+*      gt_kayit_gos_bp-waers_t = 'TRY'.
+*      gt_kayit_gos_bp-waers = gt_a_bp-waers.
+*      collect gt_kayit_gos_bp.clear gt_kayit_gos_bp.
+*    endloop.
+*
+*    loop at gt_a_bp.
+*      read table gt_upload_hkont with key sozlesme_id =
+*      gt_a_bp-sozlesme_id.
+*      check sy-subrc eq 0.
+*      "amortisman alacak kaydi
+*      gt_kayit_gos_bp-sozlesme_id  = gt_a_bp-sozlesme_id.
+*      gt_kayit_gos_bp-hkont = gt_upload_hkont-amort_hes."alacak
+*      gt_kayit_gos_bp-shkzg = 'H'.
+*      gt_kayit_gos_bp-tutar = gt_a_bp-amort_bpb.
+*      gt_kayit_gos_bp-tutar_up = gt_a_bp-amort_upb.
+*      gt_kayit_gos_bp-waers_t = 'TRY'.
+*      gt_kayit_gos_bp-waers = gt_a_bp-waers.
+*      collect gt_kayit_gos_bp.clear gt_kayit_gos_bp.
+*
+*      "amortisman borç kaydi
+*      gt_kayit_gos_bp-sozlesme_id  = gt_a_bp-sozlesme_id.
+*      gt_kayit_gos_bp-hkont = gt_upload_hkont-amort_gid."borç
+*      gt_kayit_gos_bp-shkzg = 'S'.
+*      gt_kayit_gos_bp-tutar    = gt_a_bp-amort_bpb.
+*      gt_kayit_gos_bp-tutar_up = gt_a_bp-amort_upb.
+*      gt_kayit_gos_bp-waers = gt_a_bp-waers.
+*      gt_kayit_gos_bp-waers_t = 'TRY'.
+*      gt_kayit_gos_bp-kostl = gt_a_bp-kostl.
+*      gt_kayit_gos_bp-aufnr = gt_a_bp-aufnr.
+*      collect gt_kayit_gos_bp.clear gt_kayit_gos_bp.
+*
+*      "faiz alacak kaydi
+*      gt_kayit_gos_bp-sozlesme_id  = gt_a_bp-sozlesme_id.
+*      gt_kayit_gos_bp-hkont = gt_upload_hkont-faiz_hes."alacak
+*      gt_kayit_gos_bp-shkzg = 'H'.
+*      gt_kayit_gos_bp-tutar = gt_a_bp-faiz_bpb.
+*      gt_kayit_gos_bp-tutar_up = gt_a_bp-faiz_upb.
+*      gt_kayit_gos_bp-waers_t = 'TRY'.
+*      gt_kayit_gos_bp-waers = gt_a_bp-waers.
+*      collect gt_kayit_gos_bp.clear gt_kayit_gos_bp.
+*
+*      "faiz borç kaydi
+*      gt_kayit_gos_bp-sozlesme_id  = gt_a_bp-sozlesme_id.
+*      gt_kayit_gos_bp-hkont = gt_upload_hkont-faiz_gid."borç
+*      gt_kayit_gos_bp-shkzg = 'S'.
+*      gt_kayit_gos_bp-tutar = gt_a_bp-faiz_bpb.
+*      gt_kayit_gos_bp-tutar_up = gt_a_bp-faiz_upb.
+*      gt_kayit_gos_bp-waers_t = 'TRY'.
+*      gt_kayit_gos_bp-waers = gt_a_bp-waers.
+*      gt_kayit_gos_bp-kostl = gt_a_bp-kostl.
+*      gt_kayit_gos_bp-aufnr = gt_a_bp-aufnr.
+*      collect gt_kayit_gos_bp.clear gt_kayit_gos_bp.
+*
+*      gt_kayit_gos_bp-sozlesme_id  = gt_a_bp-sozlesme_id.
+*      gt_kayit_gos_bp-hkont = gt_upload_hkont-kira_yuk_k."alacak
+*      gt_kayit_gos_bp-shkzg = 'H'.
+*      gt_kayit_gos_bp-tutar = gt_a_bp-faiz_bpb.
+*      gt_kayit_gos_bp-tutar_up = gt_a_bp-faiz_upb.
+*      gt_kayit_gos_bp-waers_t = 'TRY'.
+*      gt_kayit_gos_bp-waers = gt_a_bp-waers.
+*      collect gt_kayit_gos_bp.clear gt_kayit_gos_bp.
+*
+*      gt_kayit_gos_bp-sozlesme_id  = gt_a_bp-sozlesme_id.
+*      gt_kayit_gos_bp-hkont = gt_upload_hkont-faiz_hes."borç
+*      gt_kayit_gos_bp-shkzg = 'S'.
+*      gt_kayit_gos_bp-tutar = gt_a_bp-faiz_bpb.
+*      gt_kayit_gos_bp-tutar_up = gt_a_bp-faiz_upb.
+*      gt_kayit_gos_bp-waers_t = 'TRY'.
+*      gt_kayit_gos_bp-waers = gt_a_bp-waers.
+*      collect gt_kayit_gos_bp.clear gt_kayit_gos_bp.
+*
+*      gt_kayit_gos_bp-sozlesme_id  = gt_a_bp-sozlesme_id.
+*      gt_kayit_gos_bp-hkont = gt_upload_hkont-amort_gid."alacak
+*      gt_kayit_gos_bp-shkzg = 'H'.
+*      gt_kayit_gos_bp-tutar = gt_a_bp-wrbtr.
+*      gt_kayit_gos_bp-tutar_up = gt_a_bp-dmbtr.
+*      gt_kayit_gos_bp-waers_t = 'TRY'.
+*      gt_kayit_gos_bp-waers = gt_a_bp-waers.
+*      collect gt_kayit_gos_bp.clear gt_kayit_gos_bp.
+*
+*      gt_kayit_gos_bp-sozlesme_id  = gt_a_bp-sozlesme_id.
+*      gt_kayit_gos_bp-hkont = gt_upload_hkont-kira_yuk_k."alacak
+*      gt_kayit_gos_bp-shkzg = 'S'.
+*      gt_kayit_gos_bp-tutar = gt_a_bp-wrbtr.
+*      gt_kayit_gos_bp-tutar_up = gt_a_bp-dmbtr.
+*      gt_kayit_gos_bp-waers_t = 'TRY'.
+*      gt_kayit_gos_bp-waers = gt_a_bp-waers.
+*      collect gt_kayit_gos_bp.clear gt_kayit_gos_bp.
+*    endloop.
+*
+*    loop at gt_kayit_gos_bp.
+*      select single txt50 from skat into gt_kayit_gos_bp-txt50
+*        where spras = sy-langu
+*          and saknr = gt_kayit_gos_bp-hkont.
+*      modify gt_kayit_gos_bp.
+*    endloop.
+*
+*  elseif rd_upb = 'X'.
+*    clear:gt_kayit_gos[],gt_kayit_gos.
+*    loop at gt_a where monat = 0.
+*     read table gt_upload_hkont with key sozlesme_id = gt_a-sozlesme_id
+*     .
+*      check sy-subrc eq 0.
+*      gt_kayit_gos-sozlesme_id  = gt_a-sozlesme_id.
+*      gt_kayit_gos-hkont = gt_upload_hkont-kira_yuk_u."alacak hesabi
+*      gt_kayit_gos-shkzg = 'H'.
+*      gt_kayit_gos-tutar = gt_a-yukumluluk.
+*      gt_kayit_gos-waers = gt_a-waers.
+*      collect gt_kayit_gos.clear gt_kayit_gos.
+*
+*      gt_kayit_gos-sozlesme_id  = gt_a-sozlesme_id.
+*      gt_kayit_gos-hkont = gt_upload_hkont-veri_kul."borç hesabi
+*      gt_kayit_gos-shkzg = 'S'.
+*      gt_kayit_gos-tutar = gt_a-kul_hak.
+*      gt_kayit_gos-waers = gt_a-waers.
+*      collect gt_kayit_gos.clear gt_kayit_gos.
+*    endloop.
+*
+*    loop at gt_a.
+*     read table gt_upload_hkont with key sozlesme_id = gt_a-sozlesme_id
+*     .
+*      check sy-subrc eq 0.
+*      "amortisman alacak kaydi
+*      gt_kayit_gos-sozlesme_id  = gt_a-sozlesme_id.
+*      gt_kayit_gos-hkont = gt_upload_hkont-amort_hes."alacak
+*      gt_kayit_gos-shkzg = 'H'.
+*      gt_kayit_gos-tutar = gt_a-amort.
+*      gt_kayit_gos-waers = gt_a-waers.
+*      collect gt_kayit_gos.clear gt_kayit_gos.
+*
+*      "amortisman borç kaydi
+*      gt_kayit_gos-sozlesme_id  = gt_a-sozlesme_id.
+*      gt_kayit_gos-hkont = gt_upload_hkont-amort_gid."borç
+*      gt_kayit_gos-shkzg = 'S'.
+*      gt_kayit_gos-tutar = gt_a-amort.
+*      gt_kayit_gos-waers = gt_a-waers.
+*      gt_kayit_gos-kostl = gt_a-kostl.
+*      gt_kayit_gos-aufnr = gt_a-aufnr.
+*      collect gt_kayit_gos.clear gt_kayit_gos.
+*
+*      "faiz alacak kaydi
+*      gt_kayit_gos-sozlesme_id  = gt_a-sozlesme_id.
+*      gt_kayit_gos-hkont = gt_upload_hkont-faiz_hes."alacak
+*      gt_kayit_gos-shkzg = 'H'.
+*      gt_kayit_gos-tutar = gt_a-faiz.
+*      gt_kayit_gos-waers = gt_a-waers.
+*      collect gt_kayit_gos.clear gt_kayit_gos.
+*
+*      "faiz borç kaydi
+*      gt_kayit_gos-sozlesme_id  = gt_a-sozlesme_id.
+*      gt_kayit_gos-hkont = gt_upload_hkont-faiz_gid."borç
+*      gt_kayit_gos-shkzg = 'S'.
+*      gt_kayit_gos-tutar = gt_a-faiz.
+*      gt_kayit_gos-waers = gt_a-waers.
+*      gt_kayit_gos-kostl = gt_a-kostl.
+*      gt_kayit_gos-aufnr = gt_a-aufnr.
+*      collect gt_kayit_gos.clear gt_kayit_gos.
+*
+*      gt_kayit_gos-sozlesme_id  = gt_a-sozlesme_id.
+*      gt_kayit_gos-hkont = gt_upload_hkont-kira_yuk_k."alacak
+*      gt_kayit_gos-shkzg = 'H'.
+*      gt_kayit_gos-tutar = gt_a-faiz.
+*      gt_kayit_gos-waers = gt_a-waers.
+*      collect gt_kayit_gos.clear gt_kayit_gos.
+*
+*      gt_kayit_gos-sozlesme_id  = gt_a-sozlesme_id.
+*      gt_kayit_gos-hkont = gt_upload_hkont-faiz_hes."borç
+*      gt_kayit_gos-shkzg = 'S'.
+*      gt_kayit_gos-tutar = gt_a-faiz.
+*      gt_kayit_gos-waers = gt_a-waers.
+*      collect gt_kayit_gos.clear gt_kayit_gos.
+*
+*      gt_kayit_gos-sozlesme_id  = gt_a-sozlesme_id.
+*      gt_kayit_gos-hkont = gt_upload_hkont-amort_gid."alacak
+*      gt_kayit_gos-shkzg = 'H'.
+*      gt_kayit_gos-tutar = gt_a-aylik_kira.
+*      gt_kayit_gos-waers = gt_a-waers.
+*      collect gt_kayit_gos.clear gt_kayit_gos.
+*
+*      gt_kayit_gos-sozlesme_id  = gt_a-sozlesme_id.
+*      gt_kayit_gos-hkont = gt_upload_hkont-kira_yuk_k."alacak
+*      gt_kayit_gos-shkzg = 'S'.
+*      gt_kayit_gos-tutar = gt_a-aylik_kira.
+*      gt_kayit_gos-waers = gt_a-waers.
+*      collect gt_kayit_gos.clear gt_kayit_gos.
+*    endloop.
+*
+*    loop at gt_kayit_gos.
+*      select single txt50 from skat into gt_kayit_gos-txt50
+*        where spras = sy-langu
+*          and saknr = gt_kayit_gos-hkont.
+*      modify gt_kayit_gos.
+*    endloop.
+*
+*  endif.
+*sort gt_kayit_gos    by sozlesme_id.
+*sort gt_kayit_gos_bp by sozlesme_id.
+ENDFORM.                    " SIMULASYON
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY_ALV
+*&---------------------------------------------------------------------*
+FORM display_alv .
+  DATA: l_cat LIKE LINE OF ct_fieldcat,
+          index TYPE i.
+
+  CALL FUNCTION 'REUSE_ALV_FIELDCATALOG_MERGE'
+    EXPORTING
+      i_program_name     = sy-repid
+      i_internal_tabname = 'GT_KAYIT_GOS'
+      i_inclname         = sy-repid
+    CHANGING
+      ct_fieldcat        = ct_fieldcat.
+
+  DEFINE set_text.
+    l_cat-seltext_s = l_cat-seltext_m = l_cat-seltext_l =
+    l_cat-reptext_ddic = &1.
+  END-OF-DEFINITION.
+
+  LOOP AT ct_fieldcat INTO l_cat.
+    CASE l_cat-fieldname.
+      WHEN 'TUTAR'.
+        set_text 'Tutar'.
+      WHEN 'AUFNR'.
+        set_text 'Siparis'.
+      WHEN 'SOZLESME_ID'.
+        set_text 'Sözlesme ID'.
+*        l_cat-no_out = 'X'.
+      WHEN 'MARK'.
+        l_cat-no_out = 'X'.
+      WHEN OTHERS.
+    ENDCASE.
+    MODIFY ct_fieldcat FROM l_cat.
+  ENDLOOP.
+
+  gs_layo-zebra             = 'X'.
+  gs_layo-colwidth_optimize = 'X'.
+  gs_layo-box_fieldname     = 'MARK'.
+
+  CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+    EXPORTING
+      i_bypassing_buffer       = 'X'
+      i_callback_program       = sy-repid
+      is_layout                = gs_layo
+      i_callback_pf_status_set = 'PF_STATUS_SET_X'
+      i_callback_user_command  = 'USER_COMMAND_X'
+      it_fieldcat              = ct_fieldcat[]
+      it_sort                  = gt_sort[]
+      i_grid_settings          = gs_glay
+      i_save                   = 'A'
+    TABLES
+      t_outtab                 = gt_kayit_gos[]
+    EXCEPTIONS
+      program_error            = 1
+      OTHERS                   = 2.
+ENDFORM.                    " DISPLAY_ALV
+*&---------------------------------------------------------------------*
+*&      Form  standard_fullscreen
+*&---------------------------------------------------------------------*
+FORM pf_status_set_x USING rt_extab TYPE slis_t_extab.
+  DATA: lin TYPE i.
+
+  SET PF-STATUS 'GUI_X'.
+  SET TITLEBAR  'GUI_TITLE' WITH lin.
+ENDFORM.                    " DISPLAY_ALV
+
+*&---------------------------------------------------------------------
+*&      Form  user_command
+*&---------------------------------------------------------------------
+FORM user_command_x USING r_ucomm     LIKE sy-ucomm
+                        rs_selfield TYPE slis_selfield.
+  CASE r_ucomm.
+    WHEN '&F03' OR '&F15'.
+      LEAVE TO SCREEN 0.
+    WHEN '&F12'.
+      LEAVE PROGRAM.
+*    when '&IC1'.
+*      perform submit_action.
+    WHEN OTHERS.
+
+  ENDCASE.
+  CLEAR: r_ucomm.
+  rs_selfield-refresh = 'X'.
+ENDFORM.                    "user_command
+*&---------------------------------------------------------------------*
+*&      Form  GET_ALV_DATA
+*&---------------------------------------------------------------------*
+FORM get_alv_data .
+*  data: lv_name1 type lfa1-name1,
+*        lv_name2 type lfa1-name2.
+*
+*  if s_gjahr[] is not initial.
+*    delete gt_kalem where gjahr not in s_gjahr.
+*  endif.
+*  if s_monat[] is not initial.
+*    delete gt_kalem where monat_ger not in s_monat.
+*  endif.
+*  if p_bukrs is not initial .
+*    delete gt_kalem where bukrs ne p_bukrs.
+*  endif.
+*  if p_sozid is not initial.
+*    delete gt_kalem where sozlesme_id ne p_sozid.
+*  endif.
+*
+*  loop at gt_kalem.
+*    read table gt_upload with key sozlesme_id = gt_kalem-sozlesme_id.
+*    check sy-subrc eq 0.
+*    if p_sozno is not initial and gt_upload-sozlesme_no ne p_sozno.
+*      continue.
+*    endif.
+*    if p_sozve is not initial and gt_upload-sozlesme_ver ne p_sozve.
+*      continue.
+*    endif.
+*    if p_kirtu is not initial and gt_upload-kiralama_turu ne p_kirtu.
+*      continue.
+*    endif.
+*    "sözleşme durumu text hata çikabilir
+*    if p_lifnr is not initial and gt_upload-lifnr ne p_lifnr.
+*      continue.
+*    endif.
+*
+*    clear: gt_a,gt_a_bp.
+*    if rd_bpb = 'X'.
+*      gt_a_bp-sozlesme_id   = gt_upload-sozlesme_id.
+*      gt_a_bp-sozlesme_ver  = gt_upload-sozlesme_ver.
+*      gt_a_bp-soz_durumu    = gt_upload-soz_durumu.
+*      case gt_a_bp-soz_durumu.
+*        when '01'.
+*          gt_a_bp-soz_durumu_t = 'Aktif'.
+*        when '02'.
+*          gt_a_bp-soz_durumu_t = 'Pasif'.
+*        when '03'.
+*          gt_a_bp-soz_durumu_t = 'Gölge'.
+*      endcase.
+*      gt_a_bp-bukrs         = gt_upload-bukrs.
+*      gt_a_bp-gjahr         = gt_kalem-gjahr.
+*      gt_a_bp-monat         = gt_kalem-monat.
+*      gt_a_bp-monat_ger     = gt_kalem-monat_ger.
+*      gt_a_bp-kiralama_turu = gt_upload-kiralama_turu.
+*      read table gt_001 with key kiralama_turu = gt_a_bp-kiralama_turu.
+*      if sy-subrc eq 0.
+*        gt_a_bp-kiraturu_t = gt_001-text50.
+*      endif.
+*      gt_a_bp-sozlesme_no   = gt_upload-sozlesme_no.
+*      gt_a_bp-gec_bas       = gt_upload-gec_bas.
+*      gt_a_bp-gec_bit       = gt_upload-gec_bit.
+*      gt_a_bp-lifnr         = gt_upload-lifnr.
+*      clear: lv_name1,lv_name2.
+*      if gt_a_bp-lifnr is not initial.
+*        select single name1 name2 from lfa1 into (lv_name1, lv_name2)
+*          where lifnr = gt_a_bp-lifnr.
+*        if sy-subrc eq 0.
+*          concatenate lv_name1 lv_name2 into gt_a_bp-lifnr_t
+*          separated by space.
+*        endif.
+*      endif.
+*      gt_a_bp-waers          = gt_upload-waers.
+*      gt_a_bp-gsber          = gt_upload-gsber.
+*      gt_a_bp-kostl          = gt_upload-kostl.
+*      gt_a_bp-aufnr          = gt_upload-aufnr.
+*      gt_a_bp-kul_hak_bpb    = gt_kalem-kul_hak_bpb.
+*      gt_a_bp-yukumluluk_bpb = gt_kalem-yukumluluk_bpb.
+*      gt_a_bp-wrbtr          = gt_kalem-wrbtr.
+*      gt_a_bp-amort_bpb      = gt_kalem-amort_bpb.
+*      gt_a_bp-faiz_bpb       = gt_kalem-faiz_bpb.
+*
+*      gt_a_bp-kul_hak_upb    = gt_kalem-kul_hak_upb.
+*      gt_a_bp-yukumluluk_upb = gt_kalem-yukumluluk_upb.
+*      gt_a_bp-dmbtr          = gt_kalem-dmbtr.
+*      gt_a_bp-amort_upb      = gt_kalem-amort_upb.
+*      gt_a_bp-faiz_upb       = gt_kalem-faiz_upb.
+*      gt_a_bp-waers_t        = 'TRY'.
+*      append gt_a_bp.clear gt_a_bp.
+*    elseif rd_upb = 'X'.
+*      gt_a-sozlesme_id   = gt_upload-sozlesme_id.
+*      gt_a-sozlesme_ver  = gt_upload-sozlesme_ver.
+*      gt_a-soz_durumu    = gt_upload-soz_durumu.
+*      case gt_a-soz_durumu.
+*        when '01'.
+*          gt_a-soz_durumu_t = 'Aktif'.
+*        when '02'.
+*          gt_a-soz_durumu_t = 'Pasif'.
+*        when '03'.
+*          gt_a-soz_durumu_t = 'Gölge'.
+*      endcase.
+*      gt_a-bukrs         = gt_upload-bukrs.
+*      gt_a-gjahr         = gt_kalem-gjahr.
+*      gt_a-monat         = gt_kalem-monat.
+*      gt_a-monat_ger     = gt_kalem-monat_ger.
+*      gt_a-kiralama_turu = gt_upload-kiralama_turu.
+*      read table gt_001 with key kiralama_turu = gt_a-kiralama_turu.
+*      if sy-subrc eq 0.
+*        gt_a-kiraturu_t = gt_001-text50.
+*      endif.
+*      gt_a-sozlesme_no   = gt_upload-sozlesme_no.
+*      gt_a-gec_bas       = gt_upload-gec_bas.
+*      gt_a-gec_bit       = gt_upload-gec_bit.
+*      gt_a-lifnr         = gt_upload-lifnr.
+*      clear: lv_name1,lv_name2.
+*      if gt_a-lifnr is not initial.
+*        select single name1 name2 from lfa1 into (lv_name1, lv_name2)
+*          where lifnr = gt_a-lifnr.
+*        if sy-subrc eq 0.
+*          concatenate lv_name1 lv_name2 into gt_a-lifnr_t
+*          separated by space.
+*        endif.
+*      endif.
+*      gt_a-waers         = gt_upload-waers.
+*      gt_a-gsber         = gt_upload-gsber.
+*      gt_a-kostl         = gt_upload-kostl.
+*      gt_a-aufnr         = gt_upload-aufnr.
+*      gt_a-kul_hak       = gt_kalem-kul_hak_upb.
+*      gt_a-yukumluluk    = gt_kalem-yukumluluk_upb.
+*      gt_a-aylik_kira    = gt_kalem-dmbtr.
+*      gt_a-amort         = gt_kalem-amort_upb.
+*      gt_a-faiz          = gt_kalem-faiz_upb.
+*      append gt_a.clear gt_a.
+*    endif.
+*  endloop.
+*  loop at gt_a where monat = 0.
+*    gt_a-aylik_kira = 0.
+*    modify gt_a.
+*  endloop.
+*  loop at gt_a_bp where monat = 0.
+*    gt_a_bp-wrbtr = 0.
+*    gt_a_bp-dmbtr = 0.
+*    modify gt_a_bp.
+*  endloop.
+ENDFORM.                    " GET_ALV_DATA
+*&---------------------------------------------------------------------*
+*&      Form  UPDATE_TABLE
+*&---------------------------------------------------------------------*
+FORM update_table.
+  DATA:lt_messtab TYPE TABLE OF bapiret2 WITH HEADER LINE.
+
+  DATA:lv_type        TYPE bapiret2-type      ,
+       lv_id          TYPE bapiret2-id        ,
+       lv_number      TYPE bapiret2-number    ,
+       lv_message_v1  TYPE bapiret2-message_v1,
+       lv_message_v2  TYPE bapiret2-message_v2,
+       lv_message_v3  TYPE bapiret2-message_v3,
+       lv_message_v4  TYPE bapiret2-message_v4.
+  DATA:lt_log TYPE TABLE OF /eczb/ufrs_t_008 WITH HEADER LINE,
+       lt_pdf TYPE TABLE OF /eczb/ufrs_t_018 WITH HEADER LINE.
+  RANGES: r_id FOR /eczb/ufrs_t_003-sozlesme_id.
+  CLEAR:lt_log[],lt_log,lt_pdf[],lt_pdf.
+
+*  if gt_baslik_1a[] is not initial.
+*    try.
+*        insert /eczb/ufrs_t_002 from table gt_baslik_1a.
+*        if sy-subrc eq 0.
+*          commit work and wait.
+*          lv_type   = 'S'.
+*          lv_number = '017'.
+*          lv_id     = '/ECZB/UFRS16'.
+*
+*          perform add_message tables lt_messtab
+*                              using lv_type lv_id lv_number.
+*        else.
+*          lv_type   = 'E'.
+*          lv_number = '018'.
+*          lv_id     = '/ECZB/UFRS16'.
+*
+*          perform add_message tables lt_messtab
+*                              using lv_type lv_id lv_number.
+*        endif.
+*      catch cx_sy_open_sql_db.
+*    endtry.
+*
+*    loop at gt_baslik_1a.
+*      move-corresponding gt_baslik_1a to lt_log.
+*      lt_log-uname = sy-uname.
+*      lt_log-erdat = sy-datum.
+*      lt_log-erzet = sy-uzeit.
+*      append lt_log.clear lt_log.
+*    endloop.
+*
+*    try.
+*        insert /eczb/ufrs_t_008 from table lt_log.
+*        if sy-subrc eq 0.
+*          commit work and wait.
+*        else.
+*          call function 'BAPI_TRANSACTION_ROLLBACK'.
+*        endif.
+*      catch cx_sy_open_sql_db.
+*    endtry.
+*  endif.
+
+  CLEAR:r_id[],r_id,lt_log[],lt_log.
+  LOOP AT gt_baslik.
+    MOVE-CORRESPONDING gt_baslik TO lt_log.
+    lt_log-uname = sy-uname.
+    lt_log-erdat = sy-datum.
+    lt_log-erzet = sy-uzeit.
+    APPEND lt_log.CLEAR lt_log.
+    r_id-sign = 'I'.
+    r_id-option = 'EQ'.
+    r_id-low = gt_baslik-sozlesme_id.
+    APPEND r_id.CLEAR r_id.
+
+    IF gv_xstr_content IS NOT INITIAL.
+      lt_pdf-sozlesme_id = gt_baslik-sozlesme_id.
+      lt_pdf-xstring     = gv_xstr_content.
+      APPEND lt_pdf.CLEAR lt_pdf.
+    ENDIF.
+
+  ENDLOOP.
+
+  IF gt_kalem_n[] IS NOT INITIAL.
+    IF r_id[] IS NOT INITIAL.
+      DELETE FROM /eczb/ufrs_t_011 WHERE sozlesme_id IN r_id.
+      IF sy-subrc EQ 0.
+        COMMIT WORK AND  WAIT.
+      ENDIF.
+    ENDIF.
+    TRY.
+        INSERT /eczb/ufrs_t_011 FROM TABLE gt_kalem_n.
+        IF sy-subrc EQ 0.
+          COMMIT WORK AND WAIT.
+          lv_type   = 'S'.
+          lv_number = '000'.
+          lv_id     = '/ECZB/UFRS16'.
+
+          PERFORM add_message TABLES lt_messtab
+                              USING lv_type lv_id lv_number.
+        ELSE.
+          CALL FUNCTION 'BAPI_TRANSACTION_ROLLBACK'.
+          lv_type   = 'E'.
+          lv_number = '003'.
+          lv_id     = '/ECZB/UFRS16'.
+          PERFORM add_message TABLES lt_messtab
+                              USING lv_type lv_id lv_number.
+        ENDIF.
+      CATCH cx_sy_open_sql_db.
+        lv_type   = 'E'.
+        lv_number = '003'.
+        lv_id     = '/ECZB/UFRS16'.
+        PERFORM add_message TABLES lt_messtab
+                            USING lv_type lv_id lv_number.
+    ENDTRY.
+  ELSE.
+
+  ENDIF.
+
+  LOOP AT gt_baslik.
+    DELETE FROM /eczb/ufrs_t_002 WHERE
+                sozlesme_id   = gt_baslik-sozlesme_id  AND
+                sozlesme_ver  = gt_baslik-sozlesme_ver AND
+                bukrs         = gt_baslik-bukrs        AND
+                sozlesme_no   = gt_baslik-sozlesme_no.
+    IF sy-subrc EQ 0.
+      COMMIT WORK AND  WAIT.
+    ENDIF.
+
+    TRY.
+        INSERT /eczb/ufrs_t_002 FROM gt_baslik.
+        IF sy-subrc EQ 0.
+          COMMIT WORK AND WAIT.
+        ELSE.
+          CALL FUNCTION 'BAPI_TRANSACTION_ROLLBACK'.
+          CLEAR:lt_messtab.
+          lt_messtab-type = 'E'.
+          lt_messtab-number = '009'.
+          lt_messtab-id    = '/ECZB/UFRS16'.
+          lt_messtab-message_v1 = gt_baslik-sozlesme_id.
+          APPEND lt_messtab.
+
+        ENDIF.
+      CATCH cx_sy_open_sql_db.
+        CLEAR:lt_messtab.
+        lt_messtab-type = 'E'.
+        lt_messtab-number = '009'.
+        lt_messtab-id    = '/ECZB/UFRS16'.
+        lt_messtab-message_v1 = gt_baslik-sozlesme_id.
+        APPEND lt_messtab.
+    ENDTRY.
+  ENDLOOP.
+
+  TRY.
+      IF r_id[] IS NOT INITIAL.
+        DELETE FROM /eczb/ufrs_t_006 WHERE sozlesme_id IN r_id.
+        IF sy-subrc EQ 0.
+          COMMIT WORK AND  WAIT.
+        ENDIF.
+      ENDIF.
+      INSERT /eczb/ufrs_t_006 FROM TABLE gt_upload_hkont.
+      IF sy-subrc EQ 0.
+        COMMIT WORK AND WAIT.
+        lv_type   = 'S'.
+        lv_number = '002'.
+        lv_id     = '/ECZB/UFRS16'.
+        PERFORM add_message TABLES lt_messtab
+                            USING lv_type lv_id lv_number.
+
+      ELSE.
+        CALL FUNCTION 'BAPI_TRANSACTION_ROLLBACK'.
+        lv_type   = 'E'.
+        lv_number = '005'.
+        lv_id     = '/ECZB/UFRS16'.
+        PERFORM add_message TABLES lt_messtab
+                            USING lv_type lv_id lv_number.
+
+      ENDIF.
+    CATCH cx_sy_open_sql_db.
+      lv_type   = 'E'.
+      lv_number = '005'.
+      lv_id     = '/ECZB/UFRS16'.
+      PERFORM add_message TABLES lt_messtab
+                          USING lv_type lv_id lv_number.
+  ENDTRY.
+
+  TRY.
+      INSERT /eczb/ufrs_t_008 FROM TABLE lt_log.
+      IF sy-subrc EQ 0.
+        COMMIT WORK AND WAIT.
+      ELSE.
+        CALL FUNCTION 'BAPI_TRANSACTION_ROLLBACK'.
+      ENDIF.
+    CATCH cx_sy_open_sql_db.
+  ENDTRY.
+
+  IF lt_pdf[] IS NOT INITIAL.
+    TRY.
+        INSERT /eczb/ufrs_t_018 FROM TABLE lt_pdf.
+        IF sy-subrc EQ 0.
+          COMMIT WORK AND WAIT.
+          lv_type   = 'S'.
+          lv_number = '028'.
+          lv_id     = '/ECZB/UFRS16'.
+          PERFORM add_message TABLES lt_messtab
+                              USING lv_type lv_id lv_number.
+        ELSE.
+          CALL FUNCTION 'BAPI_TRANSACTION_ROLLBACK'.
+          lv_type   = 'E'.
+          lv_number = '029'.
+          lv_id     = '/ECZB/UFRS16'.
+          PERFORM add_message TABLES lt_messtab
+                              USING lv_type lv_id lv_number.
+        ENDIF.
+      CATCH cx_sy_open_sql_db.
+    ENDTRY.
+  ENDIF.
+
+  IF lt_messtab[] IS NOT INITIAL.
+    CALL FUNCTION 'RHVM_SHOW_MESSAGE'
+      EXPORTING
+        mess_header = 'Mesajlar'
+      TABLES
+        tem_message = lt_messtab
+      EXCEPTIONS
+        canceled    = 1
+        OTHERS      = 2.
+  ENDIF.
+
+ENDFORM.                    " UPDATE_TABLE
+*&---------------------------------------------------------------------*
+*&      Form  ADD_MESSAGE
+*&---------------------------------------------------------------------*
+FORM add_message TABLES messtab STRUCTURE bapiret2
+                USING type TYPE bapiret2-type id   TYPE bapiret2-id
+                number TYPE bapiret2-number.
+
+  CLEAR:messtab.
+  messtab-type       = type.
+  messtab-id         = id.
+  messtab-number     = number.
+  APPEND messtab.CLEAR messtab.
+
+ENDFORM.                    " ADD_MESSAGE
+*&---------------------------------------------------------------------*
+*&      Form  GET_DATA_SS
+*&---------------------------------------------------------------------*
+FORM get_data_ss .
+*  data: lv_name1 type lfa1-name1,
+*        lv_name2 type lfa1-name2.
+*
+*  select * from /ECZB/UFRS_T_006 into table gt_upload_hkont.
+*
+*  if rd_bpb = 'X'.
+*    select a~sozlesme_id
+*             a~sozlesme_ver
+*             a~soz_durumu
+*             a~bukrs
+*             b~gjahr
+*             b~monat_ger
+*             b~monat
+*             a~kiralama_turu
+*             a~sozlesme_no
+*             a~gec_bas
+*             a~gec_bit
+*             a~lifnr
+*             a~waers
+*             a~gsber
+*             a~kostl
+*             a~aufnr
+*             b~kul_hak_bpb
+*             b~yukumluluk_bpb
+*             b~wrbtr
+*             b~amort_bpb
+*             b~faiz_bpb
+*             b~kul_hak_upb
+*             b~yukumluluk_upb
+*             b~dmbtr
+*             b~amort_upb
+*             b~faiz_upb
+*               from /ECZB/UFRS_T_002 as a
+*        inner join /ECZB/UFRS_T_003 as b on a~sozlesme_id =
+  "b~sozlesme_id
+*         into table gt_a_bp
+*      where a~bukrs     = p_bukrs
+*        and b~monat_ger in s_monat
+*        and b~gjahr     in s_gjahr.
+*
+*  elseif rd_upb = 'X'.
+*    select a~sozlesme_id
+*           a~sozlesme_ver
+*           a~soz_durumu
+*           a~bukrs
+*           b~gjahr
+*           b~monat_ger
+*           b~monat
+*           a~kiralama_turu
+*           a~sozlesme_no
+*           a~gec_bas
+*           a~gec_bit
+*           a~lifnr
+*           a~waers
+*           a~gsber
+*           a~kostl
+*           a~aufnr
+*           b~kul_hak_upb
+*           b~yukumluluk_upb
+*           b~dmbtr
+*           b~amort_upb
+*           b~faiz_upb
+*               from /ECZB/UFRS_T_002 as a
+*        inner join /ECZB/UFRS_T_003 as b on a~sozlesme_id =
+  "b~sozlesme_id
+*         into table gt_a
+*      where a~bukrs     = p_bukrs
+*        and b~monat_ger in s_monat
+*        and b~gjahr     in s_gjahr.
+*  endif.
+*  gt_a_main[] = gt_a[].
+*  if p_sozid is not initial.
+*    delete gt_a            where sozlesme_id ne p_sozid.
+*    delete gt_a_bp         where sozlesme_id ne p_sozid.
+*    delete gt_upload_hkont where sozlesme_id ne p_sozid.
+*  endif.
+*  if p_sozno is not initial.
+*    delete gt_a    where sozlesme_no ne p_sozno.
+*    delete gt_a_bp where sozlesme_no ne p_sozno.
+*  endif.
+*  if p_sozve is not initial.
+*    delete gt_a    where sozlesme_ver ne p_sozve.
+*    delete gt_a_bp where sozlesme_ver ne p_sozve.
+*  endif.
+*  if p_kirtu is not initial.
+*    delete gt_a    where kiralama_turu ne p_kirtu.
+*    delete gt_a_bp where kiralama_turu ne p_kirtu.
+*  endif.
+*  if p_lifnr is not initial.
+*    delete gt_a    where lifnr ne p_lifnr.
+*    delete gt_a_bp where lifnr ne p_lifnr.
+*  endif.
+*
+*  loop at gt_a.
+*    if gt_a-monat = 0.
+*      gt_a-aylik_kira = 0.
+*    endif.
+*    case gt_a-soz_durumu.
+*      when '01'.
+*        gt_a-soz_durumu_t = 'Aktif'.
+*      when '02'.
+*        gt_a-soz_durumu_t = 'Pasif'.
+*      when '03'.
+*        gt_a-soz_durumu_t = 'Gölge'.
+*    endcase.
+*    read table gt_001 with key kiralama_turu = gt_a-kiralama_turu.
+*    if sy-subrc eq 0.
+*      gt_a-kiraturu_t = gt_001-text50.
+*    endif.
+*    clear: lv_name1,lv_name2.
+*    if gt_a-lifnr is not initial.
+*      select single name1 name2 from lfa1 into (lv_name1, lv_name2)
+*        where lifnr = gt_a-lifnr.
+*      if sy-subrc eq 0.
+*        concatenate lv_name1 lv_name2 into gt_a-lifnr_t
+*        separated by space.
+*      endif.
+*    endif.
+*    modify gt_a.
+*  endloop.
+*
+*  loop at gt_a_bp.
+*    gt_a_bp-waers_t = 'TRY'.
+*    if gt_a_bp-monat = 0.
+*      gt_a_bp-dmbtr = 0.
+*      gt_a_bp-wrbtr = 0.
+*    endif.
+*    case gt_a_bp-soz_durumu.
+*      when '01'.
+*        gt_a_bp-soz_durumu_t = 'Aktif'.
+*      when '02'.
+*        gt_a_bp-soz_durumu_t = 'Pasif'.
+*      when '03'.
+*        gt_a_bp-soz_durumu_t = 'Gölge'.
+*    endcase.
+*    read table gt_001 with key kiralama_turu = gt_a_bp-kiralama_turu.
+*    if sy-subrc eq 0.
+*      gt_a_bp-kiraturu_t = gt_001-text50.
+*    endif.
+*    clear: lv_name1,lv_name2.
+*    if gt_a_bp-lifnr is not initial.
+*      select single name1 name2 from lfa1 into (lv_name1, lv_name2)
+*        where lifnr = gt_a_bp-lifnr.
+*      if sy-subrc eq 0.
+*        concatenate lv_name1 lv_name2 into gt_a_bp-lifnr_t
+*        separated by space.
+*      endif.
+*    endif.
+*    modify gt_a_bp.
+*  endloop.
+
+ENDFORM.                    " GET_DATA_SS
+*&---------------------------------------------------------------------*
+*&      Form  INIT
+*&---------------------------------------------------------------------*
+FORM init .
+  SELECT * FROM /eczb/ufrs_t_001 INTO TABLE gt_001.
+ENDFORM.                    " INIT
+*&---------------------------------------------------------------------*
+*&      Form  CREATE_AND_INIT_ALV_BP
+*&---------------------------------------------------------------------*
+FORM create_and_init_alv_bp .
+  DATA: it_lvcfcat TYPE lvc_t_fcat.
+  DATA: ll_fc LIKE LINE OF gt_fc.
+
+  CREATE OBJECT gt_container
+    EXPORTING
+      container_name              = mycontainer
+    EXCEPTIONS
+      cntl_error                  = 1
+      cntl_system_error           = 2
+      create_error                = 3
+      lifetime_error              = 4
+      lifetime_dynpro_dynpro_link = 5.
+
+  CREATE OBJECT grid1
+    EXPORTING
+      i_parent = gt_container.
+
+  gs_layout-zebra      = 'X'.
+  gs_layout-sel_mode   = 'D'.
+  gs_layout-cwidth_opt = 'X'.
+
+  CALL FUNCTION 'REUSE_ALV_FIELDCATALOG_MERGE'
+    EXPORTING
+      i_program_name     = sy-repid
+      i_internal_tabname = 'GT_A_BP'
+      i_inclname         = sy-repid
+    CHANGING
+      ct_fieldcat        = gt_fieldcat.
+
+  CALL FUNCTION 'LVC_TRANSFER_FROM_SLIS'
+    EXPORTING
+      it_fieldcat_alv = gt_fieldcat
+    IMPORTING
+      et_fieldcat_lvc = gt_fc
+    TABLES
+      it_data         = gt_a.
+
+  DEFINE set_text.
+    wa_fc-scrtext_s = wa_fc-scrtext_m =
+    wa_fc-seltext   = wa_fc-reptext   =
+    wa_fc-scrtext_l = &1.
+  END-OF-DEFINITION.
+
+  LOOP AT gt_fc INTO wa_fc.
+    CASE wa_fc-fieldname.
+      WHEN 'WAERS_T'.
+        wa_fc-col_pos = 21.
+        wa_fc-emphasize = 'C700'.
+      WHEN 'MONAT_GER'.
+        wa_fc-lzero = 'X'.
+      WHEN 'LIFNR_T'.
+        set_text 'Kiralama Firmasi metni'.
+        wa_fc-col_pos = 12.
+      WHEN 'SOZLESME_NO'.
+        set_text 'Sözlesme No'.
+      WHEN 'GJAHR'.
+        set_text 'Mali yil'.
+      WHEN 'SOZLESME_ID'.
+        set_text 'Sözlesme ID'.
+      WHEN 'GSBER'.
+        set_text 'Is Alani'.
+      WHEN 'BUKRS'.
+        set_text 'Sirket Kodu'.
+      WHEN 'SOZLESME_VER'.
+        set_text 'Sözlesme Versiyonu'.
+      WHEN 'SOZ_DURUMU'       .
+        set_text 'Sözlesme Durumu'.
+      WHEN 'KIRATURU_T'       .
+        set_text 'Kiramalama türü metin'.
+        wa_fc-col_pos = 8.
+      WHEN 'SOZ_DURUMU_T'       .
+        set_text 'Sözlesme Durumu metin'.
+        wa_fc-col_pos = 3.
+      WHEN 'MONAT'       .
+        wa_fc-lzero = 'X'.
+        set_text 'Sözlesme Dönemi'.
+      WHEN 'GEC_BAS'       .
+        set_text 'Geçerlilik Başlangiç Tarihi'.
+      WHEN 'GEC_BIT'       .
+        set_text 'Geçerlilik Bitiş Tarihi'.
+      WHEN 'LIFNR'         .
+        set_text 'Kiralama Firmasi'.
+      WHEN 'WAERS'         .
+        set_text 'Sözlesme Para Birimi'.
+      WHEN 'AUFNR'         .
+        set_text 'Iç Siparis'.
+      WHEN 'KUL_HAK_UPB'   .
+        set_text 'Kullanim Hakki Tutari(UPB)'.
+        wa_fc-emphasize = 'C700'.
+      WHEN 'YUKUMLULUK_UPB'.
+        set_text 'Yükümlülük Tutari(UPB)'.
+        wa_fc-emphasize = 'C700'.
+      WHEN 'DMBTR'    .
+        set_text 'Aylik Kira Bedeli(UPB)'.
+        wa_fc-emphasize = 'C700'.
+      WHEN 'AMORT_UPB'     .
+        set_text 'Amortisman Tutari(UPB)'.
+        wa_fc-emphasize = 'C700'.
+      WHEN 'FAIZ_UPB'      .
+        set_text 'Faiz Tutari(UPB)'.
+        wa_fc-emphasize = 'C700'.
+      WHEN 'KUL_HAK_BPB'   .
+        set_text 'Kullanim Hakki Tutari(BPB)'.
+
+      WHEN 'YUKUMLULUK_BPB'.
+        set_text 'Yükümlülük Tutari(BPB)'.
+
+      WHEN 'WRBTR'    .
+        set_text 'Aylik Kira Bedeli(BPB)'.
+
+      WHEN 'AMORT_BPB'     .
+        set_text 'Amortisman Tutari(BPB)'.
+
+      WHEN 'FAIZ_BPB'      .
+        set_text 'Faiz Tutari(BPB)'.
+
+    ENDCASE.
+
+    MODIFY gt_fc FROM wa_fc.
+  ENDLOOP.
+
+  PERFORM exclude_tb_functions CHANGING gt_exclude.
+
+
+  CALL METHOD grid1->set_table_for_first_display
+    EXPORTING
+      is_layout            = gs_layout
+      it_toolbar_excluding = gt_exclude
+      is_variant           = is_variant
+      i_save               = 'X'
+    CHANGING
+      it_fieldcatalog      = gt_fc[]
+      it_outtab            = gt_a_bp[].
+
+  CREATE OBJECT event_receiver.
+  SET HANDLER event_receiver->data_changed FOR grid1.
+
+  CALL METHOD grid1->set_toolbar_interactive.
+  CALL METHOD grid1->refresh_table_display.
+  CALL METHOD grid1->register_edit_event
+    EXPORTING
+      i_event_id = cl_gui_alv_grid=>mc_evt_modified.
+
+  CALL METHOD grid1->register_edit_event
+    EXPORTING
+      i_event_id = cl_gui_alv_grid=>mc_evt_enter.
+ENDFORM.                    " CREATE_AND_INIT_ALV_BP
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY_ALV_BP
+*&---------------------------------------------------------------------*
+FORM display_alv_bp .
+  DATA: l_cat LIKE LINE OF ct_fieldcat,
+        index TYPE i.
+
+  CALL FUNCTION 'REUSE_ALV_FIELDCATALOG_MERGE'
+    EXPORTING
+      i_program_name     = sy-repid
+      i_internal_tabname = 'GT_KAYIT_GOS_BP'
+      i_inclname         = sy-repid
+    CHANGING
+      ct_fieldcat        = ct_fieldcat.
+
+  DEFINE set_text.
+    l_cat-seltext_s = l_cat-seltext_m = l_cat-seltext_l =
+    l_cat-reptext_ddic = &1.
+  END-OF-DEFINITION.
+
+  LOOP AT ct_fieldcat INTO l_cat.
+    CASE l_cat-fieldname.
+      WHEN 'TUTAR_UP'.
+        set_text 'Tutar(UPB)'.
+      WHEN 'TUTAR'.
+        set_text 'Tutar(BPB)'.
+      WHEN 'AUFNR'.
+        set_text 'Siparis'.
+      WHEN 'SOZLESME_ID'.
+        set_text 'Sözlesme ID'.
+*        l_cat-no_out = 'X'.
+      WHEN 'MARK'.
+        l_cat-no_out = 'X'.
+      WHEN OTHERS.
+    ENDCASE.
+    MODIFY ct_fieldcat FROM l_cat.
+  ENDLOOP.
+
+  gs_layo-zebra             = 'X'.
+  gs_layo-colwidth_optimize = 'X'.
+  gs_layo-box_fieldname     = 'MARK'.
+
+  CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+    EXPORTING
+      i_bypassing_buffer       = 'X'
+      i_callback_program       = sy-repid
+      is_layout                = gs_layo
+      i_callback_pf_status_set = 'PF_STATUS_SET_X'
+      i_callback_user_command  = 'USER_COMMAND_X'
+      it_fieldcat              = ct_fieldcat[]
+      it_sort                  = gt_sort[]
+      i_grid_settings          = gs_glay
+      i_save                   = 'A'
+    TABLES
+      t_outtab                 = gt_kayit_gos_bp[]
+    EXCEPTIONS
+      program_error            = 1
+      OTHERS                   = 2.
+ENDFORM.                    " DISPLAY_ALV_BP
+*&---------------------------------------------------------------------*
+*&      Form  DOWNLOAD_EXCEL
+*&---------------------------------------------------------------------*
+FORM download_excel .
+  DATA: BEGIN OF lt_ztable1 OCCURS 0,
+        sspace TYPE c LENGTH 10,
+        s1 TYPE c LENGTH 40,
+        s2 TYPE c LENGTH 40,
+        s3 TYPE c LENGTH 40,
+        s4 TYPE c LENGTH 40,
+        s5 TYPE c LENGTH 40,
+        s6 TYPE c LENGTH 40,
+        s7 TYPE c LENGTH 40,
+        s8 TYPE c LENGTH 40,
+        s9 TYPE c LENGTH 40,
+       s10 TYPE c LENGTH 40,
+       s11 TYPE c LENGTH 40,
+       s12 TYPE c LENGTH 40,
+       s13 TYPE c LENGTH 40,
+       s14 TYPE c LENGTH 40,
+       s15 TYPE c LENGTH 40,
+       s16 TYPE c LENGTH 40,
+       s17 TYPE c LENGTH 40,
+       s18 TYPE c LENGTH 40,
+       s19 TYPE c LENGTH 40,
+       s20 TYPE c LENGTH 40,
+       s21 TYPE c LENGTH 40,
+       s22 TYPE c LENGTH 40,
+       s23 TYPE c LENGTH 40,
+       s24 TYPE c LENGTH 40,
+       s25 TYPE c LENGTH 40,
+       s26 TYPE c LENGTH 40,
+       s27 TYPE c LENGTH 40,
+       s28 TYPE c LENGTH 40,
+       s29 TYPE c LENGTH 40,
+       s30 TYPE c LENGTH 40,
+       s31 TYPE c LENGTH 40,
+       s32 TYPE c LENGTH 40,
+       s33 TYPE c LENGTH 40,
+       s34 TYPE c LENGTH 40,
+       s35 TYPE c LENGTH 40,
+       s36 TYPE c LENGTH 40,
+       s37 TYPE c LENGTH 40,
+       s38 TYPE c LENGTH 40,
+       s39 TYPE c LENGTH 40,
+       s40 TYPE c LENGTH 40,
+       s41 TYPE c LENGTH 40,
+       s42 TYPE c LENGTH 40,
+       s43 TYPE c LENGTH 40,
+       s44 TYPE c LENGTH 40,
+       s45 TYPE c LENGTH 40,
+       s46 TYPE c LENGTH 40,
+       s47 TYPE c LENGTH 40,
+       s48 TYPE c LENGTH 40,
+       s49 TYPE c LENGTH 40,
+    END OF lt_ztable1.
+  DATA: lv_rc TYPE i.
+
+  DATA:lt_ex1 TYPE ty_data WITH HEADER LINE.
+
+  deli = cl_abap_char_utilities=>horizontal_tab.
+  CLEAR lt_ztable1.
+*  lt_ztable1-s1 = 'Sözleşme ID'.
+*  lt_ztable1-s2 = 'Sözleşme Versiyonu'.
+  lt_ztable1-s1 = 'Şirket Kodu'.
+*  lt_ztable1-s4 = 'Sözleşme No'.
+  lt_ztable1-s2 = 'Hesaplama Başlangıç Tarihi'.
+  lt_ztable1-s3 = 'Hesaplama Bitiş Tarihi'.
+  lt_ztable1-s4 = 'Kiralama Türü'.
+  lt_ztable1-s5 = 'Sözleşme Durumu'.
+  lt_ztable1-s6 = 'Kiralama Firması'.
+  lt_ztable1-s7 = 'Sözleşme Para Birimi'.
+  lt_ztable1-s8 = 'Sözleşme Tutarı UPB'.
+  lt_ztable1-s9 = 'Sözleşme Tutarı BPB'.
+  lt_ztable1-s10 = 'Sözleşme Kuru'.
+  lt_ztable1-s11 = 'İş Alanı'.
+  lt_ztable1-s12 = 'Masraf Yeri'.
+  lt_ztable1-s13 = 'İç Sipariş'.
+  lt_ztable1-s14 = 'Faiz Oranı'.
+  lt_ztable1-s15 = 'Veri Kullanım Hakkı'.
+  lt_ztable1-s16 = 'Kira Yükümlülüğü Kısa'.
+  lt_ztable1-s17 = 'Kira Yükümlülüğü Uzun'.
+  lt_ztable1-s18 = 'Amortisman Hesabı'.
+  lt_ztable1-s19 = 'Faiz Gider Hesabı Kv'.
+  lt_ztable1-s20 = 'Faiz Gider Hesabı Uv'.
+  lt_ztable1-s21 = 'Amortisman Gider Hesabı'.
+  lt_ztable1-s22 = 'Kira. işlemlerinden borçlar faiz yük. Ks'.
+  lt_ztable1-s23 = 'Kira. işlemlerinden borçlar faiz yük. Us'.
+
+  lt_ztable1-s24 = 'Kira gider hesabı'.
+  lt_ztable1-s25 = 'Geri çekme hesabı'.
+  lt_ztable1-s26 = 'Kira gider hesabı uv'.
+
+  lt_ztable1-s27 = 'Metin'.
+  lt_ztable1-s28 = 'Fatura Günü'.
+  lt_ztable1-s29 = 'Ödeme Koşulları'.
+  lt_ztable1-s30 = 'Ödeme Günü'.
+  lt_ztable1-s31 = 'Ödeme Türü'.
+  lt_ztable1-s32 = 'Artış Oranı'.
+  lt_ztable1-s33 = 'Plaka'.
+  lt_ztable1-s34 = 'İşlev Alanı'.
+  lt_ztable1-s35 = 'Matbu No'.
+  lt_ztable1-s36 = 'Ödeme Periodu'.
+  lt_ztable1-s37 = 'Ödeme Zamanı'.
+  lt_ztable1-s38 = 'Satın Alma Opsiyonu'.
+  lt_ztable1-s39 = 'Yenileme Opsiyonu'.
+  lt_ztable1-s40 = 'Fesih Opsiyonu'.
+  lt_ztable1-s41 = 'Satın Alma Opsiyonu Metin'.
+  lt_ztable1-s42 = 'Yenileme Opsiyonu Metin'.
+  lt_ztable1-s43 = 'Fesih Opsiyonu Metin'.
+  lt_ztable1-s44 = 'Muhatap Şirket Numarası'.
+  lt_ztable1-s45 = 'Sözleşme Başlangıç Tarihi'.
+  lt_ztable1-s46 = 'İlk Ödeme Tarihi'.
+  lt_ztable1-s47 = 'Kar Merkezi'.
+  lt_ztable1-s48 = 'Sabit Faiz'.
+  lt_ztable1-s49 = 'GAAG'.
+
+  APPEND lt_ztable1.
+
+  LOOP AT lt_ztable1.
+    CLEAR lt_ex1.
+    CONCATENATE lt_ztable1-s1 lt_ztable1-s2 lt_ztable1-s3 lt_ztable1-s4
+                lt_ztable1-s5 lt_ztable1-s6 lt_ztable1-s7 lt_ztable1-s8
+                lt_ztable1-s9 lt_ztable1-s10   lt_ztable1-s11
+                lt_ztable1-s12 lt_ztable1-s13 lt_ztable1-s14
+                lt_ztable1-s15 lt_ztable1-s16 lt_ztable1-s17
+                lt_ztable1-s18 lt_ztable1-s19 lt_ztable1-s20
+                lt_ztable1-s21 lt_ztable1-s22 lt_ztable1-s23
+                lt_ztable1-s24 lt_ztable1-s25 lt_ztable1-s26
+                lt_ztable1-s27 lt_ztable1-s28 lt_ztable1-s29
+                lt_ztable1-s30 lt_ztable1-s31 lt_ztable1-s32
+                lt_ztable1-s33 lt_ztable1-s34 lt_ztable1-s35
+                lt_ztable1-s36 lt_ztable1-s37 lt_ztable1-s38
+                lt_ztable1-s39 lt_ztable1-s40 lt_ztable1-s41
+                lt_ztable1-s42 lt_ztable1-s43 lt_ztable1-s44
+                lt_ztable1-s45 lt_ztable1-s46 lt_ztable1-s47
+                lt_ztable1-s48 lt_ztable1-s49
+
+    INTO lt_ex1
+    SEPARATED BY deli.
+    APPEND lt_ex1.
+  ENDLOOP.
+
+  " start Excel
+  IF h_excel-header = space OR h_excel-handle = -1.
+    CREATE OBJECT h_excel 'EXCEL.APPLICATION'.
+  ENDIF.
+
+*--- get list of workbooks, initially empty
+  CALL METHOD OF
+    h_excel
+    'Workbooks' = h_mapl.
+  SET PROPERTY OF h_excel 'Visible'       = 1.
+  CALL METHOD OF
+    h_mapl
+    'Add' = h_map.
+
+  PERFORM set_first_sheet.
+
+
+  CALL METHOD cl_gui_frontend_services=>clipboard_export
+    IMPORTING
+      data                 = lt_ex1[]
+    CHANGING
+      rc                   = lv_rc
+    EXCEPTIONS
+      cntl_error           = 1
+      error_no_gui         = 2
+      not_supported_by_gui = 3
+      OTHERS               = 4.
+
+  PERFORM paste_excel.
+
+ENDFORM.                    " DOWNLOAD_EXCEL
+*&---------------------------------------------------------------------*
+*&      Form  set_first_sheet
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM set_first_sheet .
+
+  gv_sheet_name = 'Taslak'.
+  GET PROPERTY OF h_excel   'ACTIVESHEET' = worksheet.
+  SET PROPERTY OF worksheet 'Name'        = gv_sheet_name .
+
+ENDFORM.                    " SET_FIRST_SHEET
+*&---------------------------------------------------------------------*
+*&      Form  paste_excel
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM paste_excel .
+
+  CALL METHOD OF
+    h_excel
+    'Cells' = w_cell1
+    EXPORTING
+      #1 = 1
+      #2 = 1.
+  CALL METHOD OF
+    h_excel
+    'Cells' = w_cell2
+    EXPORTING
+      #1 = 1
+      #2 = 1.
+  CALL METHOD OF
+    h_excel
+    'Range' = range
+    EXPORTING
+      #1 = w_cell1
+      #2 = w_cell2.
+  CALL METHOD OF
+    range
+    'Select'.
+  CALL METHOD OF
+    worksheet
+    'Paste'.
+
+ENDFORM.                    " PASTE_EXCEL
+*&---------------------------------------------------------------------*
+*&      Form  CHECK_AUTH
+*&---------------------------------------------------------------------*
+FORM check_auth_load .
+  DATA:ls_09 TYPE /eczb/ufrs_t_009.
+
+  SELECT SINGLE * FROM /eczb/ufrs_t_009 INTO ls_09
+    WHERE uname  = sy-uname
+      AND run_03 = 'X'.
+
+  IF sy-subrc NE 0.
+    MESSAGE text-003 TYPE 'E'.
+  ENDIF.
+
+ENDFORM.                    " CHECK_AUTH
+*&---------------------------------------------------------------------*
+*&      Form  CHECK_AUTH_SAVE
+*&---------------------------------------------------------------------*
+FORM check_auth_save .
+  DATA:ls_09 TYPE /eczb/ufrs_t_009.
+
+  SELECT SINGLE * FROM /eczb/ufrs_t_009 INTO ls_09
+    WHERE uname   = sy-uname
+      AND save_03 = 'X'.
+
+  IF sy-subrc NE 0.
+    MESSAGE text-004 TYPE 'E'.
+  ENDIF.
+ENDFORM.                    " CHECK_AUTH_SAVE
+*&---------------------------------------------------------------------*
+*&      Form  UPDATE_PDF
+*&---------------------------------------------------------------------*
+FORM update_pdf .
+
+  DATA:
+        lt_content TYPE STANDARD TABLE OF tdline,
+        len TYPE i,
+        lv_file LIKE rlgrap-filename,
+        xstr_content TYPE xstring.
+  DATA:BEGIN OF gs_store_file,
+       filename     TYPE string,
+       file_content TYPE xstring,
+      END OF gs_store_file.
+
+  DATA:
+     w_filename TYPE string, " File name
+     w_length TYPE i,
+     lt_file_table TYPE filetable,
+     lv_filelength TYPE i,
+     lv_rc TYPE i,
+     lv_filename TYPE string,
+     w_pdf_data TYPE xstring,
+     lt_rawtab TYPE TABLE OF char255,
+     w_pdf_file TYPE string,
+     lo_pdfobj TYPE REF TO if_fp_pdf_object VALUE IS INITIAL,
+     xslt_message TYPE string,
+     lt_pdf TYPE TABLE OF /eczb/ufrs_t_018 WITH HEADER LINE,
+     exc TYPE REF TO cx_root.
+  CLEAR:gv_xstr_content.
+
+  CALL METHOD cl_gui_frontend_services=>file_open_dialog
+    CHANGING
+    file_table = lt_file_table
+    rc = lv_rc
+* USER_ACTION =
+* FILE_ENCODING =
+    EXCEPTIONS
+    file_open_dialog_failed = 1
+    cntl_error = 2
+    error_no_gui = 3
+    not_supported_by_gui = 4
+    OTHERS = 5.
+  IF sy-subrc <> 0.
+* MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+* WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+  ENDIF.
+*  READ TABLE lt_file_table
+*        INTO lv_filename
+*        INDEX 1.
+  READ TABLE lt_file_table
+      INTO lv_file
+      INDEX 1.
+  IF sy-subrc EQ 0.
+    lv_filename = lv_file.
+  ENDIF.
+  CALL FUNCTION 'GUI_UPLOAD'
+    EXPORTING
+      filename                = lv_filename
+      filetype                = 'BIN'
+    IMPORTING
+      filelength              = len
+    TABLES
+      data_tab                = lt_content
+    EXCEPTIONS
+      file_open_error         = 1
+      file_read_error         = 2
+      no_batch                = 3
+      gui_refuse_filetransfer = 4
+      invalid_type            = 5
+      no_authority            = 6
+      unknown_error           = 7
+      bad_data_format         = 8
+      header_not_allowed      = 9
+      separator_not_allowed   = 10
+      header_too_long         = 11
+      unknown_dp_error        = 12
+      access_denied           = 13
+      dp_out_of_memory        = 14
+      disk_full               = 15
+      dp_timeout              = 16
+      OTHERS                  = 17.
+  IF sy-subrc <> 0.
+    MESSAGE 'Unable to upload file' TYPE 'E'.
+  ENDIF.
+
+  "Convert binary ITAB to xstring
+  CALL FUNCTION 'SCMS_BINARY_TO_XSTRING'
+    EXPORTING
+      input_length       = len
+*     FIRST_LINE         = 0
+*     LAST_LINE          = 0
+   IMPORTING
+     buffer             = gv_xstr_content
+    TABLES
+      binary_tab         = lt_content
+   EXCEPTIONS
+     failed             = 1
+     OTHERS             = 2
+            .
+  IF sy-subrc <> 0.
+    MESSAGE 'Unable to convert binary to xstring' TYPE 'E'.
+  ENDIF.
+
+  "pdf tablosu
+*  ls_test1-id   = 1.
+*  ls_test1-xstring = xstr_content.
+*  append ls_test1. clear ls_test1.
+*
+*  insert ztest1 from table ls_test1.
+*  if sy-subrc eq 0.
+*    commit work and wait.
+*  endif.
+
+*  select single * from ztest1 into ls_test2.
+*    CLEAR:gt_content[].
+*
+*    call function 'SCMS_XSTRING_TO_BINARY'
+*      exporting
+*        buffer                = ls_test2-xstring
+**       APPEND_TO_TABLE       = ' '
+**     IMPORTING
+**       OUTPUT_LENGTH         =
+*      tables
+*        binary_tab            = gt_content.
+*
+*
+*  clear gs_store_file.
+*  gs_store_file-filename = p_file.
+*  gs_store_file-file_content = xstr_content.
+*  "Insert file into table
+**  insert z1127582_upload from gs_store_file.
+*  if sy-subrc is initial.
+*    message 'Successfully uploaded' type 'S'.
+*  else.
+*    message 'Failed to upload' type 'E'.
+*  endif.
+
+*  call function 'GUI_DOWNLOAD'
+*    exporting
+**     BIN_FILESIZE                    =
+*      filename                        = p_file
+*     filetype                        = 'BIN'
+**     APPEND                          = ' '
+**     WRITE_FIELD_SEPARATOR           = ' '
+**     HEADER                          = '00'
+**     TRUNC_TRAILING_BLANKS           = ' '
+**     WRITE_LF                        = 'X'
+**     COL_SELECT                      = ' '
+**     COL_SELECT_MASK                 = ' '
+**     DAT_MODE                        = ' '
+**     CONFIRM_OVERWRITE               = ' '
+**     NO_AUTH_CHECK                   = ' '
+**     CODEPAGE                        = ' '
+**     IGNORE_CERR                     = ABAP_TRUE
+**     REPLACEMENT                     = '#'
+**     WRITE_BOM                       = ' '
+**     TRUNC_TRAILING_BLANKS_EOL       = 'X'
+**     WK1_N_FORMAT                    = ' '
+**     WK1_N_SIZE                      = ' '
+**     WK1_T_FORMAT                    = ' '
+**     WK1_T_SIZE                      = ' '
+**     WRITE_LF_AFTER_LAST_LINE        = ABAP_TRUE
+**     SHOW_TRANSFER_STATUS            = ABAP_TRUE
+**     VIRUS_SCAN_PROFILE              = '/SCET/GUI_DOWNLOAD'
+**   IMPORTING
+**     FILELENGTH                      =
+*    tables
+*      data_tab                        = gt_content
+**     FIELDNAMES                      =
+*   exceptions
+*     file_write_error                = 1
+*     no_batch                        = 2
+*     gui_refuse_filetransfer         = 3
+*     invalid_type                    = 4
+*     no_authority                    = 5
+*     unknown_error                   = 6
+*     header_not_allowed              = 7
+*     separator_not_allowed           = 8
+*     filesize_not_allowed            = 9
+*     header_too_long                 = 10
+*     dp_error_create                 = 11
+*     dp_error_send                   = 12
+*     dp_error_write                  = 13
+*     unknown_dp_error                = 14
+*     access_denied                   = 15
+*     dp_out_of_memory                = 16
+*     disk_full                       = 17
+*     dp_timeout                      = 18
+*     file_not_found                  = 19
+*     dataprovider_exception          = 20
+*     control_flush_error             = 21
+*     others                          = 22
+*            .
+*  if sy-subrc <> 0.
+** MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+**         WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+*  endif.
+*
+*  call function 'GUI_UPLOAD'
+*    exporting
+*      filename                = p_file
+*      filetype                = 'BIN'
+*    importing
+*      filelength              = len
+*    tables
+*      data_tab                = gt_content
+*    exceptions
+*      file_open_error         = 1
+*      file_read_error         = 2
+*      no_batch                = 3
+*      gui_refuse_filetransfer = 4
+*      invalid_type            = 5
+*      no_authority            = 6
+*      unknown_error           = 7
+*      bad_data_format         = 8
+*      header_not_allowed      = 9
+*      separator_not_allowed   = 10
+*      header_too_long         = 11
+*      unknown_dp_error        = 12
+*      access_denied           = 13
+*      dp_out_of_memory        = 14
+*      disk_full               = 15
+*      dp_timeout              = 16
+*      others                  = 17.
+*  if sy-subrc <> 0.
+*    message 'Unable to upload file' type 'E'.
+*  endif.
+ENDFORM.                    " UPDATE_PDF
